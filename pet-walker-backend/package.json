@@ -1,0 +1,58 @@
+{
+  "name": "pet-walker-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsc && node dist/index.js",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marottiProjects/pet-walker-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marottiProjects/pet-walker-backend/issues"
+  },
+  "homepage": "https://github.com/marottiProjects/pet-walker-backend#readme",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.9.0",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/helmet": "^4.0.0",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-async-handler": "^1.2.0",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "leaflet": "^1.9.4",
+    "mercadopago": "^2.7.0",
+    "multer": "^2.0.1",
+    "react-leaflet": "^5.0.0",
+    "socket.io": "^4.8.1",
+    "zod": "^3.25.56"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/leaflet": "^1.9.18",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.15.30",
+    "prisma": "^6.9.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

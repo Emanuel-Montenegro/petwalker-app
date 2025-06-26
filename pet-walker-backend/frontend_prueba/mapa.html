@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mapa de Paseo</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    #map { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const paseoId = 1; // 🔁 CAMBIAR por el ID del paseo en curso
+    const socket = io('http://localhost:3000'); // 🔁 Ajustá si usás otro puerto
+
+    // Mapa centrado en Buenos Aires por defecto
+    const map = L.map('map').setView([-34.6037, -58.3816], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let markerPaseador = null;
+    let markerOrigen = null;
+
+    // 1. Obtener ubicación de origen del dueño
+    fetch(`http://localhost:3000/api/paseos/${paseoId}`)
+      .then(res => res.json())
+      .then(data => {
+        const { origenLatitud, origenLongitud } = data.paseo;
+        if (origenLatitud && origenLongitud) {
+          markerOrigen = L.marker([origenLatitud, origenLongitud])
+            .addTo(map)
+            .bindPopup('Origen del dueño')
+            .openPopup();
+          map.setView([origenLatitud, origenLongitud], 15);
+        }
+      })
+      .catch(err => console.error('Error al obtener origen:', err));
+
+    // 2. Escuchar coordenadas del paseador en tiempo real
+    socket.on(`coordenada-${paseoId}`, ({ lat, lng }) => {
+      if (!markerPaseador) {
+        markerPaseador = L.marker([lat, lng], { icon: L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png' }) })
+          .addTo(map)
+          .bindPopup('Paseador');
+      } else {
+        markerPaseador.setLatLng([lat, lng]);
+      }
+    });
+  </script>
+</body>
+</html>
