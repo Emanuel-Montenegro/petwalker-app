@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { resumenUsuario } from '../controladores/usuariosControlador';
+import { resumenUsuario, obtenerPerfil } from '../controladores/usuariosControlador';
 import { verificarToken } from '../middlewares/authMiddleware';
-import { obtenerPerfil } from '../controladores/usuarioControlador';
 import { RequestConUsuario } from '../types/express';
 import { verificarRol } from '../middlewares/rolMiddleware';
 import { Rol } from '@prisma/client';

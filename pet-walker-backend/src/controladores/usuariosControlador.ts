@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../base_datos/conexion';
 import bcrypt from 'bcrypt';
+import { RequestConUsuario } from '../types/express';
 
 export async function registrarUsuario(req: Request, res: Response): Promise<void> {
   const { nombre, email, contraseña, rol } = req.body;
@@ -105,4 +106,45 @@ export async function resumenUsuario(req: Request, res: Response): Promise<void>
     res.status(500).json({ mensaje: 'Error al obtener el resumen del usuario' });
   }
 }
+
+// Obtener el perfil del usuario actual (migrado desde usuarioControlador.ts)
+export const obtenerPerfil = async (req: RequestConUsuario, res: Response): Promise<void> => {
+  try {
+    if (!req.usuario?.id) {
+      res.status(401).json({ message: 'No autorizado' });
+      return;
+    }
+
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: req.usuario.id },
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        rol: true,
+        mascotas: {
+          select: {
+            id: true,
+            nombre: true,
+            especie: true,
+            raza: true,
+            edad: true,
+            sociable: true,
+            usuarioId: true,
+          }
+        }
+      }
+    });
+
+    if (!usuario) {
+      res.status(404).json({ message: 'Usuario no encontrado' });
+      return;
+    }
+
+    res.json(usuario);
+  } catch (error) {
+    console.error('Error al obtener perfil:', error);
+    res.status(500).json({ message: 'Error al obtener perfil' });
+  }
+};
 

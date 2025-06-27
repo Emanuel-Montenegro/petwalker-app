@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
 import { verificarToken } from '../middlewares/authMiddleware';
-import { getPaseoById } from '../controladores/paseoControlador';
 import {
   crearPaseo,
   listarPaseosPendientes,
@@ -8,7 +7,8 @@ import {
   obtenerMisPaseosComoDueno,
   obtenerMisPaseosComoPaseador,
   iniciarPaseo,
-  finalizarPaseo
+  finalizarPaseo,
+  getPaseoById
 } from '../controladores/paseosControlador';
 import { verificarRol } from '../middlewares/rolMiddleware';
 import { Rol } from '@prisma/client';

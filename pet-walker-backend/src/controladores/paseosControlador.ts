@@ -322,3 +322,32 @@ export const cancelarPaseo = async (req: RequestConUsuario, res: Response) => {
     return res.status(500).json({ mensaje: 'Error al cancelar el paseo' });
   }
 };
+
+// Obtener un paseo por ID (migrado desde paseoControlador.ts)
+export const getPaseoById = async (req: RequestConUsuario, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const paseo = await prisma.paseo.findUnique({
+      where: { id: Number(id) },
+      include: {
+        mascota: true,
+        paseador: true
+      }
+    });
+
+    if (!paseo) {
+      return res.status(404).json({ mensaje: 'Paseo no encontrado' });
+    }
+
+    // Verificar permisos
+    if (paseo.mascota.usuarioId !== req.usuario?.id && paseo.paseadorId !== req.usuario?.id) {
+      return res.status(403).json({ mensaje: 'No tienes permiso para ver este paseo' });
+    }
+
+    res.json(paseo);
+  } catch (error) {
+    console.error('Error al obtener paseo:', error);
+    res.status(500).json({ mensaje: 'Error al obtener paseo' });
+  }
+};
