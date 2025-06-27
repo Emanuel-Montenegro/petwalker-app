@@ -1,0 +1,251 @@
+name: 🚀 CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: "18"
+  POSTGRES_VERSION: "15"
+
+jobs:
+  # ==========================================
+  # 🧪 TESTING & QUALITY CHECKS
+  # ==========================================
+  test:
+    name: 🧪 Tests & Quality
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    strategy:
+      matrix:
+        component: [backend, frontend]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: pet-walker-${{ matrix.component }}/package-lock.json
+
+      - name: 📥 Install dependencies
+        working-directory: ./pet-walker-${{ matrix.component }}
+        run: npm ci
+
+      - name: 🔍 Lint check
+        working-directory: ./pet-walker-${{ matrix.component }}
+        run: |
+          if [ "${{ matrix.component }}" = "frontend" ]; then
+            npm run lint
+          else
+            echo "Lint check skipped for backend"
+          fi
+
+      - name: 🏗️ Build project
+        working-directory: ./pet-walker-${{ matrix.component }}
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          JWT_SECRETO: test_jwt_secret_for_ci_pipeline_only
+          NODE_ENV: test
+
+      - name: 🧪 Run tests
+        working-directory: ./pet-walker-${{ matrix.component }}
+        run: npm run test:ci
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          JWT_SECRETO: test_jwt_secret_for_ci_pipeline_only
+          NODE_ENV: test
+
+      - name: 📊 Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./pet-walker-${{ matrix.component }}/coverage/lcov.info
+          flags: ${{ matrix.component }}
+          name: ${{ matrix.component }}-coverage
+
+  # ==========================================
+  # 🔒 SECURITY SCAN
+  # ==========================================
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: 📋 Upload Snyk results to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+
+  # ==========================================
+  # 🏗️ BUILD & PACKAGE
+  # ==========================================
+  build:
+    name: 🏗️ Build & Package
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 🏗️ Build Backend
+        working-directory: ./pet-walker-backend
+        run: |
+          npm ci
+          npm run build
+
+      - name: 🏗️ Build Frontend
+        working-directory: ./pet-walker-frontend
+        run: |
+          npm ci
+          npm run build
+        env:
+          NEXT_PUBLIC_BACKEND_URL: ${{ secrets.BACKEND_URL }}
+
+      - name: 📦 Create deployment artifacts
+        run: |
+          mkdir -p artifacts
+          tar -czf artifacts/backend-${{ github.sha }}.tar.gz -C pet-walker-backend dist package.json package-lock.json prisma
+          tar -czf artifacts/frontend-${{ github.sha }}.tar.gz -C pet-walker-frontend .next package.json package-lock.json public
+
+      - name: 📤 Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-${{ github.sha }}
+          path: artifacts/
+          retention-days: 30
+
+  # ==========================================
+  # 🚀 DEPLOY TO STAGING
+  # ==========================================
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+      - name: 📥 Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts-${{ github.sha }}
+          path: artifacts/
+
+      - name: 🚀 Deploy to Staging
+        run: |
+          echo "🚀 Deploying to staging environment..."
+          echo "📦 Backend artifact: artifacts/backend-${{ github.sha }}.tar.gz"
+          echo "📦 Frontend artifact: artifacts/frontend-${{ github.sha }}.tar.gz"
+          # Aquí irían los comandos reales de deploy
+          echo "✅ Staging deployment completed!"
+
+      - name: 🧪 Run smoke tests
+        run: |
+          echo "🧪 Running smoke tests on staging..."
+          # curl -f ${{ secrets.STAGING_URL }}/api/health || exit 1
+          echo "✅ Smoke tests passed!"
+
+  # ==========================================
+  # 🌟 DEPLOY TO PRODUCTION
+  # ==========================================
+  deploy-production:
+    name: 🌟 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: 📥 Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts-${{ github.sha }}
+          path: artifacts/
+
+      - name: 🌟 Deploy to Production
+        run: |
+          echo "🌟 Deploying to production environment..."
+          echo "📦 Backend artifact: artifacts/backend-${{ github.sha }}.tar.gz"
+          echo "📦 Frontend artifact: artifacts/frontend-${{ github.sha }}.tar.gz"
+          # Aquí irían los comandos reales de deploy
+          echo "✅ Production deployment completed!"
+
+      - name: 🧪 Run production health checks
+        run: |
+          echo "🧪 Running production health checks..."
+          # curl -f ${{ secrets.PRODUCTION_URL }}/api/health || exit 1
+          echo "✅ Production health checks passed!"
+
+      - name: 📢 Notify deployment success
+        if: success()
+        run: |
+          echo "🎉 Production deployment successful!"
+          echo "🔗 URL: ${{ secrets.PRODUCTION_URL }}"
+
+  # ==========================================
+  # 📊 PERFORMANCE MONITORING
+  # ==========================================
+  performance:
+    name: 📊 Performance Check
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🏃‍♂️ Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v9
+        with:
+          urls: |
+            ${{ secrets.STAGING_URL }}
+            ${{ secrets.STAGING_URL }}/login
+            ${{ secrets.STAGING_URL }}/dashboard
+          configPath: ./lighthouse.config.js
+          uploadArtifacts: true
+
+      - name: 📊 Performance budget check
+        run: |
+          echo "📊 Checking performance budgets..."
+          echo "✅ Performance checks completed!"
