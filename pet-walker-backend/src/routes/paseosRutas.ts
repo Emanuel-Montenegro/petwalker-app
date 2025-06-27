@@ -39,9 +39,9 @@ router.get('/paseador/:paseadorId', verificarRol([Rol.PASEADOR]), asyncHandler(
   async (req: Request, res: Response) => {
     // LOGS DE DEPURACIÓN
     // @ts-ignore
-    console.log('Usuario autenticado:', req.usuario);
+    
     // @ts-ignore
-    console.log('ID de la URL:', req.params.paseadorId);
+    
     // @ts-ignore
     if (parseInt(req.params.paseadorId) !== req.usuario.id) {
       return res.status(403).json({ mensaje: 'No tienes permiso para ver estos paseos' });
@@ -53,8 +53,7 @@ router.get('/paseador/:paseadorId', verificarRol([Rol.PASEADOR]), asyncHandler(
 
 // Ruta para obtener un paseo por id (dueño o paseador asignado)
 router.get('/:id', verificarToken, asyncHandler(async (req: RequestConUsuario, res: Response) => {
-  console.log('[Paseos] GET /:id - Usuario:', req.usuario);
-  console.log('[Paseos] GET /:id - ID solicitado:', req.params.id);
+
   return getPaseoById(req, res);
 }));
 

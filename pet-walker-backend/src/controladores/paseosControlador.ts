@@ -5,6 +5,7 @@ import { Rol } from '@prisma/client';
 import { generarFactura } from './facturasControlador';
 import { emitirNotificacionUsuario } from '../websockets/socketNotifications';
 import { Server } from 'socket.io';
+import { logger } from '../utils/logger';
 
 export const crearPaseo = async (req: RequestConUsuario, res: Response) => {
   const { mascotaId, fecha, origenLatitud, origenLongitud, horaInicio, hora, duracion, tipoServicio, precio } = req.body;
@@ -59,15 +60,14 @@ export const crearPaseo = async (req: RequestConUsuario, res: Response) => {
         precio,
       }
     });
-    console.log('[Paseos] Paseo creado:', paseo);
+    logger.paseoDebug('Paseo creado', { paseoId: paseo.id, mascotaId });
 
     res.status(201).json({ mensaje: 'Paseo creado', paseo });
   } catch (error) {
-    console.error(error);
+    logger.error('PASEO', 'Error al crear el paseo', error);
     res.status(500).json({ mensaje: 'Error al crear el paseo' });
   }
 };
-
 
 export const listarPaseosPendientes = async (_req: Request, res: Response) => {
   try {
@@ -98,7 +98,6 @@ export const listarPaseosPendientes = async (_req: Request, res: Response) => {
         }
       },
     });
-    console.log('[Paseos] Paseos pendientes devueltos:', paseos);
 
     res.json(paseos);
   } catch (error) {
@@ -148,11 +147,10 @@ export const aceptarPaseo = async (req: RequestConUsuario & { io?: Server }, res
         data: { paseoId: paseo.id },
       },
     });
-    console.log('[Notificaciones] Notificación creada:', notificacion);
 
     // Emitir notificación en tiempo real si el socket está disponible
     if (req.app && req.app.get('io')) {
-      console.log('[Notificaciones] Intentando emitir notificación a usuarioId:', duenioId);
+      
       emitirNotificacionUsuario(req.app.get('io'), duenioId, notificacion);
     }
 
