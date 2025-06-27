@@ -160,3 +160,24 @@
     to { opacity: 1; transform: scale(1); }
   }
 }
+
+/* Oculta todos los overlays de error de Next.js en desarrollo */
+#__next-build-watcher,
+.nextjs-toast-errors,
+.nextjs-error-overlay,
+.nextjs-toast-error,
+[data-nextjs-toast-errors],
+[data-nextjs-error-overlay],
+[data-nextjs-error] {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  z-index: -9999 !important;
+}
+body > div[style*="z-index: 9999999999"],
+body > div[style*='z-index:100000'] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
+}

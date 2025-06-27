@@ -8,27 +8,35 @@ export default function HomePage() {
     <div className="flex flex-col items-center bg-gray-50">
 
       {/* Hero Section */}
-      <section className="w-full py-20 md:py-32 text-center bg-white shadow-sm">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <h1 className="text-5xl md:text-6xl font-bold text-primary mb-6 leading-tight">
-            El Cuidado que tu Mascota Merece,
-            <br className="hidden md:inline"/> Con Total Tranquilidad para Ti.
-          </h1>
-          <p className="text-xl text-gray-700 mb-10 max-w-2xl mx-auto">
-            Conecta con paseadores verificados, sigue cada paso de tu mejor amigo en tiempo real,
-            y asegúrate de que recibe el mejor cuidado.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/register">
-              <Button className="w-full sm:w-auto px-8 py-3 text-lg font-semibold bg-accent hover:bg-green-600">
-                ¡Quiero Registrarme!
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button variant="outline" className="w-full sm:w-auto px-8 py-3 text-lg font-semibold border-primary text-primary hover:bg-primary hover:text-white">
-                Ya tengo una cuenta
-              </Button>
-            </Link>
+      <section className="w-full py-20 md:py-32 bg-white shadow-sm relative overflow-visible min-h-[600px] flex items-center">
+        {/* Huella de fondo más grande y oscura */}
+        <img src="/paw-bg.png" alt="Pata decorativa" className="absolute left-0 top-0 w-[80vw] max-w-[900px] opacity-50 select-none pointer-events-none z-0 hidden md:block" draggable="false" />
+        {/* Gato animado abajo izquierda, movido a la derecha */}
+        <img src="/cat-hero.png" alt="Gato decorativo" className="fixed left-20 md:left-32 bottom-0 w-32 md:w-40 z-20 select-none pointer-events-none" style={{transition: 'transform 0.3s'}} draggable="false" />
+        {/* Perro absolutamente posicionado, no afecta layout */}
+        <img src="/dog-hero.png" alt="Perro decorativo" className="hidden md:block absolute right-0 bottom-0 w-[50vw] max-w-[700px] h-auto object-contain select-none pointer-events-none drop-shadow-lg z-10" style={{maxHeight: '80vh'}} draggable="false" />
+        <div className="container mx-auto px-4 max-w-7xl flex flex-col items-center justify-center relative z-20 min-h-[500px]">
+          {/* Frase principal */}
+          <div className="w-full md:w-2/3 flex flex-col justify-center items-center text-center mx-auto">
+            <h1 className="text-4xl md:text-7xl font-bold text-primary mb-8 leading-tight drop-shadow-sm md:leading-[1.1]">
+              El cuidado que tu mascota merece,<br />
+              con total tranquilidad para ti.
+            </h1>
+            <p className="text-lg md:text-2xl text-gray-700 mb-10 max-w-2xl mx-auto">
+              Conecta con paseadores verificados, sigue cada paso de tu mejor amigo en tiempo real y asegúrate de que recibe el mejor cuidado.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto justify-center">
+              <Link href="/register">
+                <Button className="w-full sm:w-auto px-8 py-3 text-lg font-semibold bg-accent hover:bg-green-600">
+                  ¡Quiero Registrarme!
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="outline" className="w-full sm:w-auto px-8 py-3 text-lg font-semibold border-primary text-primary hover:bg-primary hover:text-white">
+                  Ya tengo una cuenta
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -53,7 +61,7 @@ export default function HomePage() {
               <p className="text-gray-600">Dueños encuentran paseadores verificados cerca.</p>
             </div>
             <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md">
-              <div className="w-16 h-16 bg-highlight rounded-full flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
                 <span className="text-white text-2xl">3</span>
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-3">Disfruta</h3>
@@ -66,8 +74,8 @@ export default function HomePage() {
       {/* Feature Section: Verified Caregivers */}
       <section className="w-full py-20 md:py-24">
         <div className="container mx-auto px-4 max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="rounded-lg overflow-hidden shadow-xl">
-            <div className="w-full h-64 md:h-80 bg-gray-300 flex items-center justify-center text-gray-600">Placeholder Imagen 1</div>
+          <div className="rounded-lg overflow-hidden shadow-xl flex items-center justify-center bg-white">
+            <img src="/paseador.png" alt="Ilustración paseador" className="w-full h-80 object-contain" />
           </div>
           <div>
             <h2 className="text-4xl font-bold text-primary mb-6">Paseadores de Confianza, Siempre.</h2>
@@ -99,8 +107,8 @@ export default function HomePage() {
               <li>Tranquilidad total desde donde estés.</li>
             </ul>
           </div>
-          <div className="rounded-lg overflow-hidden shadow-xl">
-            <div className="w-full h-64 md:h-80 bg-gray-300 flex items-center justify-center text-gray-600">Placeholder Imagen 2 (Mapa)</div>
+          <div className="rounded-lg overflow-hidden shadow-xl flex items-center justify-center bg-white">
+            <img src="/mapa.png" alt="Ilustración mapa paseadores" className="w-full h-80 object-contain" />
           </div>
         </div>
       </section>
