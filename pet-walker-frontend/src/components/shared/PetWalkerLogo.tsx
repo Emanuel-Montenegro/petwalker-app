@@ -1,9 +1,14 @@
 "use client";
 import { useAuthStore } from '@/lib/store/authStore';
 import { useRouter } from 'next/navigation';
-import { useRef } from 'react';
+import { useRef, memo } from 'react';
 
-export default function PetWalkerLogo({ className = "", size = 32 }: { className?: string; size?: number }) {
+interface PetWalkerLogoProps {
+  className?: string;
+  size?: number;
+}
+
+const PetWalkerLogo = memo(function PetWalkerLogo({ className = "", size = 32 }: PetWalkerLogoProps) {
   const { isAuthenticated, usuario } = useAuthStore();
   const router = useRouter();
   const pawRef = useRef<HTMLSpanElement>(null);
@@ -56,4 +61,6 @@ export default function PetWalkerLogo({ className = "", size = 32 }: { className
       </span>
     </button>
   );
-} 
+});
+
+export default PetWalkerLogo; 

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryProvider from '@/components/shared/QueryProvider';
 import { Toaster } from 'sonner';
-import Navbar from '@/components/shared/Navbar';
+import MobileNavigation from '@/components/shared/MobileNavigation';
 import AuthInitializer from '@/components/shared/AuthInitializer';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { usePathname } from 'next/navigation';
@@ -81,7 +81,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <QueryProvider>
             <AuthInitializer />
-            <Navbar />
+            <MobileNavigation />
             <main role="main" tabIndex={-1} id="main-content">
               {children}
             </main>

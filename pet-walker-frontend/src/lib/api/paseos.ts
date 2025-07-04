@@ -43,8 +43,6 @@ export const obtenerMisPaseos = async (): Promise<Paseo[]> => {
 
 // Obtener paseos como paseador
 export const obtenerMisPaseosComoPaseador = async (usuarioId: number): Promise<Paseo[]> => {
-  console.log('📋 Obteniendo paseos como paseador:', usuarioId);
-  
   const response = await fetch(`${API_BASE_URL}/paseos/mios/paseador`, {
     method: 'GET',
     headers: getAuthHeaders(),
@@ -52,7 +50,6 @@ export const obtenerMisPaseosComoPaseador = async (usuarioId: number): Promise<P
   });
   
   const result = await handleResponse<{ paseos: Paseo[] }>(response);
-  console.log('✅ Paseos como paseador obtenidos:', result);
   return result.paseos;
 };
 

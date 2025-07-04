@@ -83,10 +83,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   initializeAuth: () => {
-    console.log('[AuthStore] initializeAuth llamado, isInitialized:', get().isInitialized);
     if (!get().isInitialized) {
       const storedAuth = getStoredAuth();
-      console.log('[AuthStore] Inicializando con:', storedAuth);
       set({ 
         isAuthenticated: storedAuth.isAuthenticated, 
         usuario: storedAuth.usuario, 

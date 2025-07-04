@@ -99,7 +99,6 @@ export const scheduleWalk = async (walkData: {
 
 // NUEVO: Función para obtener paseos disponibles (para paseadores)
 export const fetchAvailableWalks = async (): Promise<Paseo[]> => {
-  console.log('Fetching available walks from:', `${API_BASE_URL}/paseos/disponibles`);
   try {
     const response = await fetch(`${API_BASE_URL}/paseos/disponibles`, {
       headers: {
@@ -107,9 +106,7 @@ export const fetchAvailableWalks = async (): Promise<Paseo[]> => {
       },
       credentials: 'include',
     });
-    console.log('Response status:', response.status);
     const data = await handleResponse<Paseo[]>(response);
-    console.log('Available walks data:', data);
     return data;
   } catch (error) {
     console.error('Error fetching available walks:', error);

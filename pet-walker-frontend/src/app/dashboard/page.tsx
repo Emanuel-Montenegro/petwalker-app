@@ -140,9 +140,7 @@ export default function DashboardPage() {
   const { data: availableWalks, isLoading: isLoadingWalks, isError: isErrorWalks, error: errorWalks } = useQuery<Paseo[]>({
     queryKey: ['availableWalks'],
     queryFn: async () => {
-      console.log('Fetching available walks...');
       const walks = await fetchAvailableWalks();
-      console.log('Available walks:', walks);
       return walks;
     },
     enabled: isAuthenticated && userProfile?.rol === 'PASEADOR',
@@ -205,10 +203,8 @@ export default function DashboardPage() {
 
   const acceptWalkMutate = useMutation({
     mutationFn: async ({ walkId, paseadorId }: { walkId: number; paseadorId: number }) => {
-      console.log('Accepting walk:', { walkId, paseadorId });
       try {
         const result = await acceptWalk(walkId, paseadorId);
-        console.log('Walk accepted successfully:', result);
         return result;
       } catch (error) {
         console.error('Error accepting walk:', error);
@@ -216,7 +212,6 @@ export default function DashboardPage() {
       }
     },
     onSuccess: () => {
-      console.log('Walk accepted, invalidating queries...');
       queryClient.invalidateQueries({ queryKey: ['availableWalks'] });
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
       toast.success("Paseo aceptado exitosamente!");
@@ -386,8 +381,7 @@ export default function DashboardPage() {
     );
   }
 
-  console.log('Rol del usuario:', userProfile.rol);
-  console.log('Renderizando paseos disponibles:', availableWalks);
+  // Debug logs eliminados para producción
 
   if (userProfile.rol === 'PASEADOR') {
     return (

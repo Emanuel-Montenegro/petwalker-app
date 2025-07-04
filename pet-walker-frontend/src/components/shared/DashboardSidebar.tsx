@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -60,19 +60,21 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-const DashboardSidebar = () => {
+const DashboardSidebar = memo(function DashboardSidebar() {
   const pathname = usePathname();
   const { usuario } = useAuthStore();
 
   // Filtrar elementos del menú basado en el rol del usuario
-  const filteredMenuItems = menuItems.filter(item => {
-    if (!item.roles) return true; // Si no hay roles específicos, mostrar a todos
-    return usuario && item.roles.includes(usuario.rol);
-  });
+  const filteredMenuItems = useMemo(() => {
+    return menuItems.filter(item => {
+      if (!item.roles) return true; // Si no hay roles específicos, mostrar a todos
+      return usuario && item.roles.includes(usuario.rol);
+    });
+  }, [usuario]);
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col">
-      <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-white border-r border-gray-200">
+    <aside className="hidden md:flex md:w-64 md:flex-col bg-white border-r border-gray-200">
+      <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
         <div className="flex items-center flex-shrink-0 px-4">
           <PawPrintIcon className="h-8 w-8 text-primary" />
           <h1 className="ml-2 text-xl font-bold text-gray-900">Pet Walker</h1>
@@ -131,6 +133,6 @@ const DashboardSidebar = () => {
       </div>
     </aside>
   );
-};
+});
 
 export default DashboardSidebar; 

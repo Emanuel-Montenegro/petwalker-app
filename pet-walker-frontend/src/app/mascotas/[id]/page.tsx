@@ -2,7 +2,7 @@
 
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { useParams } from 'next/navigation';
-import { useAuthStore } from '@/lib/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 
 interface Mascota {
   id: number;
