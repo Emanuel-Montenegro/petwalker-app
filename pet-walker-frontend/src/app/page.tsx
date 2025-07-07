@@ -285,8 +285,8 @@ export default function HomePage() {
             </div>
 
                      </div>
-         </div>
-               </section>
+        </div>
+      </section>
 
         {/* Revolutionary Stats Section - Floating Cards */}
         <section className="relative py-32 overflow-hidden">
@@ -301,7 +301,7 @@ export default function HomePage() {
                  { number: "24/7", label: "Soporte activo", trend: "Live", color: "from-blue-600 to-pink-600" }
                ].map((stat, index) => (
                 <div
-                  key={index}
+                key={index}
                   className="group relative scroll-animate opacity-0 translate-y-12"
                   style={{
                     transform: `translateY(${isClient ? Math.sin(index * 0.5) * 20 : 0}px)`,
@@ -328,10 +328,10 @@ export default function HomePage() {
                     <div className={`absolute inset-0 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-5 rounded-3xl transition-opacity duration-300`}></div>
                   </div>
                 </div>
-              ))}
-            </div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
         {/* Revolutionary Features Section - Bento Grid */}
         <section className="relative py-32">
@@ -347,7 +347,7 @@ export default function HomePage() {
                 <span className="block bg-gradient-to-r from-blue-600 via-pink-500 to-purple-600 bg-clip-text text-transparent font-medium">
                   necesitas
                 </span>
-              </h2>
+            </h2>
             </div>
 
             {/* Bento Grid Layout */}
@@ -414,9 +414,9 @@ export default function HomePage() {
                     <div key={i} className="h-8 bg-gray-100/80 rounded-lg border border-gray-200/50 flex items-center justify-center shadow-sm">
                       <span className="text-gray-500 text-xs">{['🐕', '⏱️', '📍', '🏃‍♂️', '💧', '🎾'][i]}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
+            ))}
+          </div>
+        </div>
 
               <div className="bg-gradient-to-br from-gray-50 to-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl p-6 group hover:bg-white/90 transition-all duration-500 shadow-lg scroll-animate opacity-0 translate-y-12" style={{animationDelay: '0.5s'}}>
                 <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-blue-500 rounded-xl mb-4 flex items-center justify-center shadow-md">
@@ -427,8 +427,8 @@ export default function HomePage() {
               </div>
 
             </div>
-          </div>
-        </section>
+        </div>
+      </section>
 
         {/* Revolutionary Footer */}
         <footer className="relative py-20 bg-gradient-to-br from-slate-100 via-blue-50 to-purple-100">
@@ -460,9 +460,9 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-          </div>
-        </footer>
+        </div>
+      </footer>
 
-          </div>
+    </div>
   );
 }

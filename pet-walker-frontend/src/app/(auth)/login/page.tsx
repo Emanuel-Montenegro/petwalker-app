@@ -115,127 +115,293 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-100 to-green-300">
-      <PetWalkerLogo className="mb-8" size={48} />
-      <div className="relative w-full max-w-4xl h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden">
-        {/* Contenedor deslizante */}
-        <div className={`flex w-[200%] h-full transition-transform duration-700 ease-in-out ${isLogin ? 'translate-x-0' : '-translate-x-1/2'}`}>
-          {/* Panel de Login */}
-          <div className="w-1/2 flex">
-            {/* Formulario de Login */}
-            <div className="w-3/5 p-8 flex flex-col justify-center">
-              <div className="mb-8">
-                <h1 className="text-3xl font-extrabold text-primary mb-2 tracking-tight">Iniciar Sesión</h1>
-                <p className="text-gray-500 text-base">Accede a tu cuenta para gestionar paseos y mascotas.</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl">
+        <div className="text-center mb-8">
+          <PetWalkerLogo className="mx-auto mb-4" size={48} />
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-pink-500 to-purple-600 bg-clip-text text-transparent mb-2">
+            Pet Walker
+          </h1>
+          <p className="text-gray-600">Plataforma de cuidado de mascotas</p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 relative">
+          {/* Contenedor deslizante */}
+          <div className={`flex w-[200%] lg:w-[200%] min-h-[600px] transition-transform duration-700 ease-in-out ${isLogin ? 'translate-x-0' : 'lg:-translate-x-1/2'}`}>
+            {/* Login Section */}
+            <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
+              <div className="max-w-md mx-auto">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-white text-2xl">🔑</span>
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+                  </h2>
+                  <p className="text-gray-600">
+                    {isLogin 
+                      ? 'Accede a tu cuenta para gestionar paseos y mascotas'
+                      : 'Únete a Pet Walker y comienza a cuidar mascotas'
+                    }
+                  </p>
+                </div>
+
+                <form onSubmit={handleLoginSubmit((data) => { setError(null); loginMutation.mutate(data); })} className="space-y-6">
+                  <div>
+                    <Label htmlFor="login-email" className="text-gray-700 font-medium">Email</Label>
+                    <Input 
+                      id="login-email" 
+                      type="email" 
+                      autoComplete="email" 
+                      {...registerLogin("email")}
+                      className="mt-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                    />
+                    {loginErrors.email && <p className="text-red-500 text-sm mt-1">{loginErrors.email.message}</p>}
+                  </div>
+                  <div>
+                    <Label htmlFor="login-password" className="text-gray-700 font-medium">Contraseña</Label>
+                    <Input 
+                      id="login-password" 
+                      type="password" 
+                      autoComplete="current-password" 
+                      {...registerLogin("contraseña")}
+                      className="mt-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                    />
+                    {loginErrors.contraseña && <p className="text-red-500 text-sm mt-1">{loginErrors.contraseña.message}</p>}
+                  </div>
+                  
+                  {error && (
+                    <Alert variant="destructive" className="rounded-xl">
+                      <ExclamationTriangleIcon className="h-4 w-4" />
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-3 rounded-xl hover:scale-105 transition-all duration-300 shadow-lg" 
+                    disabled={isLoginSubmitting || loginMutation.isPending}
+                  >
+                    {(isLoginSubmitting || loginMutation.isPending) ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                        Iniciando...
+                      </span>
+                    ) : "Iniciar Sesión"}
+                  </Button>
+                </form>
+
+                <div className="mt-8 text-center">
+                  <button
+                    onClick={handleToggle}
+                    className="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+                  >
+                    ¿No tienes cuenta? Regístrate
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Hero Section - Login */}
+            <div className="w-full lg:w-1/2 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-8 lg:p-12 flex items-center justify-center text-white relative overflow-hidden">
+              <div className="text-center relative z-10">
+                <div className="w-24 h-24 bg-white/20 rounded-3xl mx-auto mb-6 flex items-center justify-center backdrop-blur-sm">
+                  <span className="text-4xl">🐾</span>
+                </div>
+                <h2 className="text-3xl font-bold mb-4">
+                  {isLogin ? '¡Bienvenido de vuelta!' : '¡Únete a nosotros!'}
+                </h2>
+                <p className="text-white/90 text-lg mb-8 leading-relaxed">
+                  {isLogin 
+                    ? 'Gestiona los paseos de tus mascotas y mantente conectado con sus cuidadores de confianza.'
+                    : 'Conecta con dueños de mascotas y paseadores profesionales en nuestra plataforma segura y confiable.'
+                  }
+                </p>
+                
+                {/* Features */}
+                <div className="space-y-4 text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-lg">📱</span>
+                    </div>
+                    <span className="text-white/90">Seguimiento en tiempo real</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-lg">🛡️</span>
+                    </div>
+                    <span className="text-white/90">Cuidadores verificados</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-lg">💬</span>
+                    </div>
+                    <span className="text-white/90">Comunicación directa</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-lg">📸</span>
+                    </div>
+                    <span className="text-white/90">Fotos y reportes</span>
+                  </div>
+                </div>
               </div>
               
-              <form onSubmit={handleLoginSubmit((data) => { setError(null); loginMutation.mutate(data); })} className="space-y-6">
-                <div>
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input id="login-email" type="email" autoComplete="email" {...registerLogin("email")}/>
-                  {loginErrors.email && <p className="text-red-500 text-xs mt-1">{loginErrors.email.message}</p>}
-                </div>
-                <div>
-                  <Label htmlFor="login-password">Contraseña</Label>
-                  <Input id="login-password" type="password" autoComplete="current-password" {...registerLogin("contraseña")}/>
-                  {loginErrors.contraseña && <p className="text-red-500 text-xs mt-1">{loginErrors.contraseña.message}</p>}
-                </div>
-                <div className="flex justify-end mt-1">
-                  <a href="/auth/forgot-password" className="text-sm text-primary hover:underline text-center mt-2">¿Olvidaste tu contraseña?</a>
-                </div>
-                {error && (
-                  <Alert variant="destructive">
-                    <ExclamationTriangleIcon className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-                <Button type="submit" className="w-full" disabled={isLoginSubmitting || loginMutation.isPending}>
-                  {(isLoginSubmitting || loginMutation.isPending) ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
-                      Iniciando...
-                    </span>
-                  ) : "Iniciar Sesión"}
-                </Button>
-              </form>
+              {/* Decorative elements */}
+              <div className="absolute top-10 right-10 w-20 h-20 bg-white/10 rounded-full"></div>
+              <div className="absolute bottom-10 left-10 w-16 h-16 bg-white/10 rounded-full"></div>
+              <div className="absolute top-1/2 left-10 w-12 h-12 bg-white/10 rounded-full"></div>
             </div>
-            {/* Panel lateral de Login */}
-            <div className="w-2/5 bg-gradient-to-br from-primary to-accent text-white p-8 flex flex-col justify-center items-center">
-              <h2 className="text-2xl font-bold mb-4">¡Hola de nuevo!</h2>
-              <p className="text-center mb-6 opacity-90">Para mantenerte conectado con nosotros, inicia sesión con tu información personal</p>
-              <button
-                onClick={handleToggle}
-                className="border-2 border-white text-white px-8 py-2 rounded-full hover:bg-white hover:text-primary transition-all duration-300"
-              >
-                Registrarse
-              </button>
-            </div>
-          </div>
-          {/* Panel de Registro */}
-          <div className="w-1/2 flex">
-            {/* Panel lateral de Registro */}
-            <div className="w-2/5 bg-gradient-to-br from-accent to-primary text-white p-8 flex flex-col justify-center items-center">
-              <h2 className="text-2xl font-bold mb-4">¡Bienvenido!</h2>
-              <p className="text-center mb-6 opacity-90">Ingresa tus datos personales y comienza tu viaje con nosotros</p>
-              <button
-                onClick={handleToggle}
-                className="border-2 border-white text-white px-8 py-2 rounded-full hover:bg-white hover:text-accent transition-all duration-300"
-              >
-                Iniciar Sesión
-              </button>
-            </div>
-            {/* Formulario de Registro */}
-            <div className="w-3/5 p-8 flex flex-col justify-center">
-              <div className="mb-8">
-                <h1 className="text-3xl font-extrabold text-primary mb-2 tracking-tight">Crear Cuenta</h1>
-                <p className="text-gray-500 text-base">Únete a Pet Walker y comienza a cuidar mascotas.</p>
+
+            {/* Register Section */}
+            <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
+              <div className="max-w-md mx-auto">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-white text-2xl">✨</span>
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Crear Cuenta</h2>
+                  <p className="text-gray-600">
+                    Únete a Pet Walker y comienza a cuidar mascotas
+                  </p>
+                </div>
+
+                <form onSubmit={handleRegisterSubmit((data) => { setError(null); registerMutation.mutate(data); })} className="space-y-4">
+                  <div>
+                    <Label htmlFor="register-name" className="text-gray-700 font-medium">Nombre</Label>
+                    <Input 
+                      id="register-name" 
+                      type="text" 
+                      autoComplete="name" 
+                      {...registerRegister("nombre")}
+                      className="mt-2 border-gray-300 focus:border-pink-500 focus:ring-pink-500 rounded-xl"
+                    />
+                    {registerErrors.nombre && <p className="text-red-500 text-sm mt-1">{registerErrors.nombre.message}</p>}
+                  </div>
+                  <div>
+                    <Label htmlFor="register-email-2" className="text-gray-700 font-medium">Email</Label>
+                    <Input 
+                      id="register-email-2" 
+                      type="email" 
+                      autoComplete="email" 
+                      {...registerRegister("email")}
+                      className="mt-2 border-gray-300 focus:border-pink-500 focus:ring-pink-500 rounded-xl"
+                    />
+                    {registerErrors.email && <p className="text-red-500 text-sm mt-1">{registerErrors.email.message}</p>}
+                  </div>
+                  <div>
+                    <Label htmlFor="register-password-2" className="text-gray-700 font-medium">Contraseña</Label>
+                    <Input 
+                      id="register-password-2" 
+                      type="password" 
+                      autoComplete="new-password" 
+                      {...registerRegister("contraseña")}
+                      className="mt-2 border-gray-300 focus:border-pink-500 focus:ring-pink-500 rounded-xl"
+                    />
+                    {registerErrors.contraseña && <p className="text-red-500 text-sm mt-1">{registerErrors.contraseña.message}</p>}
+                  </div>
+                  <div>
+                    <Label htmlFor="register-confirm-2" className="text-gray-700 font-medium">Confirmar Contraseña</Label>
+                    <Input 
+                      id="register-confirm-2" 
+                      type="password" 
+                      autoComplete="new-password" 
+                      {...registerRegister("confirmar")}
+                      className="mt-2 border-gray-300 focus:border-pink-500 focus:ring-pink-500 rounded-xl"
+                    />
+                    {registerErrors.confirmar && <p className="text-red-500 text-sm mt-1">{registerErrors.confirmar.message}</p>}
+                  </div>
+                  <div>
+                    <Label htmlFor="register-role-2" className="text-gray-700 font-medium">Rol</Label>
+                    <select 
+                      id="register-role-2" 
+                      className="w-full border border-gray-300 rounded-xl px-4 py-3 mt-2 focus:border-pink-500 focus:ring-pink-500" 
+                      {...registerRegister("rol")}
+                    > 
+                      <option value="DUENO">Dueño de Mascota</option>
+                      <option value="PASEADOR">Paseador</option>
+                    </select>
+                    {registerErrors.rol && <p className="text-red-500 text-sm mt-1">{registerErrors.rol.message}</p>}
+                  </div>
+                  
+                  {error && (
+                    <Alert variant="destructive" className="rounded-xl">
+                      <ExclamationTriangleIcon className="h-4 w-4" />
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-3 rounded-xl hover:scale-105 transition-all duration-300 shadow-lg" 
+                    disabled={isRegisterSubmitting || registerMutation.isPending}
+                  >
+                    {(isRegisterSubmitting || registerMutation.isPending) ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                        Registrando...
+                      </span>
+                    ) : "Registrarse"}
+                  </Button>
+                </form>
+
+                <div className="mt-8 text-center">
+                  <button
+                    onClick={handleToggle}
+                    className="text-pink-600 hover:text-pink-800 font-medium transition-colors duration-200"
+                  >
+                    ¿Ya tienes cuenta? Inicia sesión
+                  </button>
+                </div>
               </div>
-              <form onSubmit={handleRegisterSubmit((data) => { setError(null); registerMutation.mutate(data); })} className="space-y-4">
-                <div>
-                  <Label htmlFor="register-name">Nombre</Label>
-                  <Input id="register-name" type="text" autoComplete="name" {...registerRegister("nombre")}/>
-                  {registerErrors.nombre && <p className="text-red-500 text-xs mt-1">{registerErrors.nombre.message}</p>}
+            </div>
+
+            {/* Hero Section - Register */}
+            <div className="w-full lg:w-1/2 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 p-8 lg:p-12 flex items-center justify-center text-white relative overflow-hidden">
+              <div className="text-center relative z-10">
+                <div className="w-24 h-24 bg-white/20 rounded-3xl mx-auto mb-6 flex items-center justify-center backdrop-blur-sm">
+                  <span className="text-4xl">🚀</span>
                 </div>
-                <div>
-                  <Label htmlFor="register-email">Email</Label>
-                  <Input id="register-email" type="email" autoComplete="email" {...registerRegister("email")}/>
-                  {registerErrors.email && <p className="text-red-500 text-xs mt-1">{registerErrors.email.message}</p>}
+                <h2 className="text-3xl font-bold mb-4">¡Únete a nosotros!</h2>
+                <p className="text-white/90 text-lg mb-8 leading-relaxed">
+                  Conecta con dueños de mascotas y paseadores profesionales en nuestra plataforma segura y confiable.
+                </p>
+                
+                {/* Features */}
+                <div className="space-y-4 text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-lg">🎯</span>
+                    </div>
+                    <span className="text-white/90">Oportunidades de trabajo</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-lg">💰</span>
+                    </div>
+                    <span className="text-white/90">Pagos seguros</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-lg">⭐</span>
+                    </div>
+                    <span className="text-white/90">Sistema de calificaciones</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-lg">🐾</span>
+                    </div>
+                    <span className="text-white/90">Cuidado profesional</span>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="register-password">Contraseña</Label>
-                  <Input id="register-password" type="password" autoComplete="new-password" {...registerRegister("contraseña")}/>
-                  {registerErrors.contraseña && <p className="text-red-500 text-xs mt-1">{registerErrors.contraseña.message}</p>}
-                </div>
-                <div>
-                  <Label htmlFor="register-confirm">Confirmar Contraseña</Label>
-                  <Input id="register-confirm" type="password" autoComplete="new-password" {...registerRegister("confirmar")}/>
-                  {registerErrors.confirmar && <p className="text-red-500 text-xs mt-1">{registerErrors.confirmar.message}</p>}
-                </div>
-                <div>
-                  <Label htmlFor="register-role">Rol</Label>
-                  <select id="register-role" className="w-full border rounded-md px-3 py-2 mt-1" {...registerRegister("rol")}> 
-                    <option value="DUENO">Dueño de Mascota</option>
-                    <option value="PASEADOR">Paseador</option>
-                  </select>
-                  {registerErrors.rol && <p className="text-red-500 text-xs mt-1">{registerErrors.rol.message}</p>}
-                </div>
-                {error && (
-                  <Alert variant="destructive">
-                    <ExclamationTriangleIcon className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-                <Button type="submit" className="w-full" disabled={isRegisterSubmitting || registerMutation.isPending}>
-                  {(isRegisterSubmitting || registerMutation.isPending) ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
-                      Registrando...
-                    </span>
-                  ) : "Registrarse"}
-                </Button>
-              </form>
+              </div>
+              
+              {/* Decorative elements */}
+              <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full"></div>
+              <div className="absolute bottom-10 right-10 w-16 h-16 bg-white/10 rounded-full"></div>
+              <div className="absolute top-1/2 right-10 w-12 h-12 bg-white/10 rounded-full"></div>
             </div>
           </div>
         </div>

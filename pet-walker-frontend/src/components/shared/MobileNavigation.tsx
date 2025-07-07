@@ -125,21 +125,7 @@ const MobileNavigation = () => {
     <>
       {/* Botón flotante para acceder al menú - Solo cuando está autenticado */}
       {isAuthenticated && isInitialized && usuario && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-          {/* Notificaciones flotantes */}
-          <button
-            onClick={handleNotificationsToggle}
-            className="relative p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200/50"
-            aria-label="Notificaciones"
-          >
-            <Bell className="w-5 h-5 text-gray-600" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </button>
-
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 md:hidden">
           {/* Avatar flotante */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}

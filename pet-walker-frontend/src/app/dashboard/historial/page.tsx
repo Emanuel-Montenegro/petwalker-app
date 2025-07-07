@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { StarIcon, CalendarIcon, ClockIcon, DogIcon, ChevronDownIcon, ChevronUpIcon, Cat } from 'lucide-react';
+import { StarIcon, CalendarIcon, ClockIcon, DogIcon, ChevronDownIcon, ChevronUpIcon, Cat, MapPinIcon, TimerIcon, DollarSignIcon } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 import { fetchUserProfile } from '@/lib/api/user';
 import { obtenerMisPaseos, obtenerPaseosPaseador } from '../../../lib/api/paseos';
@@ -24,11 +24,11 @@ import { useRouter } from 'next/navigation';
 
 const MapWithNoSSR = dynamic(() => import('@/components/shared/LiveMap'), { ssr: false });
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 6;
 
 const getMascotaIcon = (especie: string) => {
-  if (especie?.toLowerCase().includes('gato')) return <Cat className="h-6 w-6 mr-2" />;
-  return <DogIcon className="h-6 w-6 mr-2" />;
+  if (especie?.toLowerCase().includes('gato')) return '🐱';
+  return '🐕';
 };
 
 const HistorialPaseosPage = () => {
@@ -116,42 +116,41 @@ const HistorialPaseosPage = () => {
     }
   };
 
-  const toggleExpand = (paseoId: number) => {
-    setExpandedPaseos(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(paseoId)) {
-        newSet.delete(paseoId);
-      } else {
-        newSet.add(paseoId);
-      }
-      return newSet;
-    });
-  };
-
   const totalPages = Math.ceil(paseos.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentPaseos = paseos.slice(startIndex, endIndex);
 
   if (loading) {
-    return <GlobalLoader />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="text-gray-700 font-medium">Cargando historial...</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
       <ErrorBoundary>
-        <div className="container mx-auto py-8">
-          <Card className="max-w-md mx-auto">
-            <CardContent className="p-6 text-center">
-              <p className="text-red-600">{error}</p>
-              <Button 
-                onClick={() => window.location.reload()} 
-                className="mt-4"
-              >
-                Intentar de nuevo
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 max-w-md mx-auto text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Error al cargar</h3>
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-xl hover:scale-105 transition-all duration-300"
+            >
+              Intentar de nuevo
+            </Button>
+          </div>
         </div>
       </ErrorBoundary>
     );
@@ -159,125 +158,195 @@ const HistorialPaseosPage = () => {
 
   return (
     <ErrorBoundary>
-      <div className="container mx-auto py-8">
-        {paseoEnCurso && (
-          <Card className="mb-8 border-green-400">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-green-700">
-                <ClockIcon className="h-6 w-6" /> Paseo en Curso
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <div className="font-bold text-lg">Mascota: {paseoEnCurso.mascota?.nombre}</div>
-                  <div className="text-gray-600 text-sm">Inicio: {new Date(paseoEnCurso.fecha).toLocaleDateString('es-ES')} {paseoEnCurso.horaInicio ? paseoEnCurso.horaInicio.slice(0,5) : 'N/A'}</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+        <div className="container mx-auto py-8 space-y-8">
+          
+          {/* Header */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center">
+                  <CalendarIcon className="h-6 w-6 text-white" />
                 </div>
-                <div className="flex gap-2">
-                  <Button onClick={() => router.push(`/dashboard/paseos/${paseoEnCurso.id}`)} className="bg-green-600 text-white">Ver Tracking en Vivo</Button>
-                  <Button onClick={() => handleViewRoute(paseoEnCurso.id)} className="bg-blue-600 text-white">Ver Ruta Histórica</Button>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-800">Historial de Paseos</h1>
+                  <p className="text-gray-600">Revisa todos tus paseos completados</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
-        <div className="w-full min-h-screen bg-gradient-to-b from-white via-slate-50 to-slate-100 py-8">
-          <Card className="bg-transparent shadow-none border-none">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="h-6 w-6" />
-                Historial de Paseos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {paseos.length === 0 ? (
-                <div className="text-center py-12">
-                  <DogIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No hay paseos en el historial
-                  </h3>
-                  <p className="text-gray-500">
-                    Cuando completes paseos, aparecerán aquí para que puedas calificarlos.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                    {currentPaseos.map((paseo) => {
-                      const isExpanded = expandedPaseos.has(paseo.id);
-                      return (
-                        <div key={paseo.id} className="flex flex-col items-center">
-                          <button
-                            className={`flex items-center justify-center rounded-full bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 w-full shadow-lg border-2 border-green-600 focus:outline-none transition-all duration-300 hover:scale-105 ${isExpanded ? 'ring-2 ring-primary' : ''}`}
-                            style={{ minWidth: '180px', maxWidth: '320px' }}
-                            onClick={() => toggleExpand(paseo.id)}
-                            aria-expanded={isExpanded}
-                          >
-                            {getMascotaIcon(paseo.mascota?.especie || '')}
-                            <span className="font-semibold text-lg truncate">{paseo.mascota?.nombre || 'Mascota'}</span>
-                            <span className="ml-4">{isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}</span>
-                          </button>
-                          <div
-                            className={`overflow-hidden transition-all duration-500 ${isExpanded ? 'max-h-[600px] opacity-100 scale-100 mt-2' : 'max-h-0 opacity-0 scale-95 mt-0'}`}
-                            style={{ width: '100%', maxWidth: '420px' }}
-                          >
-                            {isExpanded && (
-                              <div className="bg-white rounded-xl shadow-xl p-6 w-full flex flex-col gap-2 border border-gray-200 animate-fade-in">
-                                <div className="flex items-center gap-3 mb-2">
-                                  {getMascotaIcon(paseo.mascota?.especie || '')}
-                                  <span className="font-bold text-2xl text-primary-foreground">{paseo.mascota?.nombre}</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2 text-gray-700 text-sm">
-                                  <div><span className="font-medium">Fecha:</span> {new Date(paseo.fecha).toLocaleDateString('es-ES')}</div>
-                                  <div><span className="font-medium">Hora:</span> {paseo.horaInicio ? paseo.horaInicio.slice(0,5) : 'N/A'}</div>
-                                  <div><span className="font-medium">Duración:</span> {paseo.duracion} min</div>
-                                  <div><span className="font-medium">Precio:</span> ${paseo.precio}</div>
-                                  <div className="col-span-2"><span className="font-medium">Estado:</span> {paseo.estado}</div>
-                                  <div className="col-span-2"><span className="font-medium">Paseador:</span> {paseo.paseador?.nombre || 'N/A'}</div>
-                                </div>
-                                <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                                  <button
-                                    className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 w-full sm:w-auto shadow-md"
-                                    onClick={() => handleViewRoute(paseo.id)}
-                                  >
-                                    Ver Ruta
-                                  </button>
-                                  {(!paseo.calificacion && userProfile?.rol === 'DUENO') && (
-                                    <CalificarPaseoModal paseo={paseo} onCalificacionRegistrada={handleCalificacionRegistrada}>
-                                      <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 w-full sm:w-auto shadow-md">
-                                        Calificar Paseador
-                                      </button>
-                                    </CalificarPaseoModal>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-green-600 text-sm font-semibold">{paseos.length} paseos completados</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Paseo en Curso */}
+          {paseoEnCurso && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center">
+                    <ClockIcon className="h-6 w-6 text-white" />
                   </div>
-                  {totalPages > 1 && (
-                    <div className="mt-8 flex justify-center">
-                      <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                      />
+                  <div>
+                    <h3 className="text-xl font-semibold text-green-800">Paseo en Curso</h3>
+                    <p className="text-green-600">Seguimiento en tiempo real</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-600 text-sm font-semibold">● En vivo</span>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl p-4 mb-4 border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center">
+                      <span className="text-2xl">{getMascotaIcon(paseoEnCurso.mascota?.especie || '')}</span>
                     </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
+                    <div>
+                      <h4 className="font-semibold text-gray-800">{paseoEnCurso.mascota?.nombre}</h4>
+                      <p className="text-sm text-gray-600">
+                        {new Date(paseoEnCurso.fecha).toLocaleDateString('es-ES')} • {paseoEnCurso.horaInicio ? paseoEnCurso.horaInicio.slice(0,5) : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => router.push(`/dashboard/paseos/${paseoEnCurso.id}`)} 
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-xl hover:scale-105 transition-all duration-300"
+                    >
+                      Ver Tracking
+                    </Button>
+                    <Button 
+                      onClick={() => handleViewRoute(paseoEnCurso.id)} 
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-xl hover:scale-105 transition-all duration-300"
+                    >
+                      Ver Ruta
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Paseos Grid */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+            {paseos.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                  <span className="text-4xl">🐾</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  No hay paseos en el historial
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Cuando completes paseos, aparecerán aquí para que puedas revisarlos.
+                </p>
+                <Button 
+                  onClick={() => router.push('/dashboard')}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-xl hover:scale-105 transition-all duration-300"
+                >
+                  Ir al Dashboard
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {currentPaseos.map((paseo) => (
+                    <div key={paseo.id} className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 group">
+                      {/* Pet Header */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center">
+                          <span className="text-2xl">{getMascotaIcon(paseo.mascota?.especie || '')}</span>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800 text-lg">{paseo.mascota?.nombre}</h3>
+                          <p className="text-sm text-gray-600">{paseo.mascota?.especie}</p>
+                        </div>
+                        <Badge className={`${getEstadoBadge(paseo.estado)} text-xs`}>
+                          {paseo.estado}
+                        </Badge>
+                      </div>
+
+                      {/* Walk Details */}
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <CalendarIcon className="h-4 w-4" />
+                          <span>{new Date(paseo.fecha).toLocaleDateString('es-ES')}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <TimerIcon className="h-4 w-4" />
+                          <span>{paseo.horaInicio ? paseo.horaInicio.slice(0,5) : 'N/A'} • {paseo.duracion} min</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <DollarSignIcon className="h-4 w-4" />
+                          <span>${paseo.precio}</span>
+                        </div>
+                        {paseo.paseador && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <span className="text-lg">👨‍🦱</span>
+                            <span>{paseo.paseador.nombre}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Rating */}
+                      {paseo.calificacion && (
+                        <div className="flex items-center gap-2 mb-4">
+                          <Rating value={paseo.calificacion.puntuacion} readOnly size="sm" />
+                          <span className="text-sm text-gray-600">({paseo.calificacion.puntuacion}/5)</span>
+                        </div>
+                      )}
+
+                      {/* Actions */}
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleViewRoute(paseo.id)}
+                          className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 rounded-xl hover:scale-105 transition-all duration-300 text-sm"
+                        >
+                          <MapPinIcon className="h-4 w-4 mr-1" />
+                          Ver Ruta
+                        </Button>
+                        {(!paseo.calificacion && userProfile?.rol === 'DUENO') && (
+                          <CalificarPaseoModal paseo={paseo} onCalificacionRegistrada={handleCalificacionRegistrada}>
+                            <Button className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 rounded-xl hover:scale-105 transition-all duration-300 text-sm">
+                              <StarIcon className="h-4 w-4 mr-1" />
+                              Calificar
+                            </Button>
+                          </CalificarPaseoModal>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex justify-center">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
+        {/* Route Modal */}
         <Dialog open={showRouteModal} onOpenChange={setShowRouteModal}>
-          <DialogContent className="sm:max-w-[800px] h-[600px]">
+          <DialogContent className="sm:max-w-[800px] h-[600px] rounded-2xl">
             <DialogHeader>
-              <DialogTitle>Ruta del Paseo</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <MapPinIcon className="h-5 w-5" />
+                Ruta del Paseo
+              </DialogTitle>
             </DialogHeader>
-            <div className="w-full h-[500px]">
+            <div className="w-full h-[500px] rounded-xl overflow-hidden">
               <MapWithNoSSR coords={routeCoords} />
             </div>
           </DialogContent>
