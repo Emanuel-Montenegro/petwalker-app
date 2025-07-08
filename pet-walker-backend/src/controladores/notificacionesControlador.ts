@@ -10,7 +10,7 @@ export const obtenerNotificaciones = async (req: RequestConUsuario, res: Respons
       where: { usuarioId },
       orderBy: { creadaEn: 'desc' },
     });
-    console.log('[Notificaciones] Notificaciones consultadas para usuarioId', usuarioId, ':', notificaciones);
+    
     res.json(notificaciones);
   } catch (error) {
     console.error('Error al obtener notificaciones:', error);

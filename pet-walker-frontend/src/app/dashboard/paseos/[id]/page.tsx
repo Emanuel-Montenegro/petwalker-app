@@ -144,7 +144,6 @@ export default function PaseoTrackingPage() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-          console.log('[GPS] getCurrentPosition:', { latitude, longitude });
           if (!latitude || !longitude || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
             toast.error('Ubicación GPS inválida. Por favor, revisa los permisos de ubicación.');
             return;
@@ -169,7 +168,6 @@ export default function PaseoTrackingPage() {
       watchId.current = navigator.geolocation.watchPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-          console.log('[GPS] watchPosition:', { latitude, longitude });
           if (!latitude || !longitude || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
             toast.error('Ubicación GPS inválida detectada durante el tracking.');
             return;

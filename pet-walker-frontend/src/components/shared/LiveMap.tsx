@@ -55,9 +55,7 @@ export default function LiveMap({ coords, origenLatitud, origenLongitud }: LiveM
       ? currentLocation
       : null;
 
-  // Debug visual
-  console.log('[LiveMap] coords:', coords);
-  console.log('[LiveMap] center:', center);
+  // Debug visual eliminado para producción
 
   if (!center) {
     return (

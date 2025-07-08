@@ -43,7 +43,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-:root {
+  :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -77,9 +77,9 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.556 0 0);
   --highlight: #FF6B35;
-}
+  }
 
-.dark {
+  .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -120,6 +120,40 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Optimizaciones mobile-first */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    /* Performance optimizations */
+    contain: layout style paint;
+    transform: translateZ(0);
+  }
+  
+  /* Mejoras de accesibilidad y rendimiento */
+  button, a {
+    touch-action: manipulation;
+  }
+  
+  /* Ultra performance optimizations */
+  * {
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
+    transform-style: preserve-3d;
+  }
+  
+  /* Optimize scroll performance */
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+  
+  /* Optimize animations for 60fps */
+  @media (prefers-reduced-motion: no-preference) {
+    *[class*="animate-"] {
+      animation-fill-mode: both;
+      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
   }
 }
 
@@ -146,38 +180,202 @@
     display: none;  /* Chrome, Safari and Opera */
   }
 
-  /* Prevenir scroll horizontal */
+  /* Prevenir scroll horizontal y optimizaciones mobile */
   .no-horizontal-scroll {
     max-width: 100%;
     overflow-x: hidden;
   }
 
+  /* Animaciones optimizadas para rendimiento */
   .animate-fade-in {
-    animation: fadeIn 0.4s cubic-bezier(0.4,0,0.2,1);
+    animation: fadeIn 0.8s cubic-bezier(0.4,0,0.2,1);
+    will-change: opacity, transform;
   }
   @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-}
+  
+  /* Animaciones de scroll suaves */
+  .scroll-animate {
+    transition: all 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
 
-/* Oculta todos los overlays de error de Next.js en desarrollo */
-#__next-build-watcher,
-.nextjs-toast-errors,
-.nextjs-error-overlay,
-.nextjs-toast-error,
-[data-nextjs-toast-errors],
-[data-nextjs-error-overlay],
-[data-nextjs-error] {
-  display: none !important;
-  pointer-events: none !important;
-  opacity: 0 !important;
-  z-index: -9999 !important;
-}
-body > div[style*="z-index: 9999999999"],
-body > div[style*='z-index:100000'] {
-  display: none !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  z-index: -9999 !important;
+  .scroll-animate.animate-fade-in {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+
+  /* Animación de escala suave */
+  @keyframes scaleX {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  /* Optimización de toques en móviles */
+  .touch-optimized {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Smooth scrolling global */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Ultra-smooth Apple-style animations */
+  @keyframes float {
+    0%, 100% { transform: translate3d(0, 0px, 0) rotateX(0deg) rotateY(0deg); }
+    33% { transform: translate3d(0, -6px, 0) rotateX(2deg) rotateY(1deg); }
+    66% { transform: translate3d(0, -6px, 0) rotateX(-2deg) rotateY(-1deg); }
+  }
+  
+  /* Smooth pulse for backgrounds */
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+  
+  /* Reduced motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* GPU acceleration classes */
+  .gpu-accelerated {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  /* 3D perspective utilities */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  /* Glassmorphism enhanced */
+  .glass-morphism {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Advanced gradients */
+  .gradient-mesh {
+    background: radial-gradient(circle at 20% 80%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(148, 163, 184, 0.1) 0%, transparent 50%);
+  }
+
+  /* Modal viewport centering - The Best Method */
+  .modal-viewport-center {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+    /* Ensure it works with any parent container */
+    max-height: 90vh !important;
+    max-width: 90vw !important;
+  }
+
+  /* Modal que siempre aparece en el viewport visible */
+  .modal-viewport-follow {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+  }
+
+  /* Contenido del modal optimizado para móvil */
+  .modal-viewport-content {
+    position: relative !important;
+    width: 100% !important;
+    max-width: min(400px, calc(100vw - 2rem)) !important;
+    max-height: calc(100vh - 2rem) !important;
+    max-height: calc(100dvh - 2rem) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  /* Safe area para dispositivos con notch */
+  @supports (padding: max(0px)) {
+    .modal-viewport-follow {
+      padding: max(1rem, env(safe-area-inset-top)) 
+               max(1rem, env(safe-area-inset-right)) 
+               max(1rem, env(safe-area-inset-bottom)) 
+               max(1rem, env(safe-area-inset-left)) !important;
+    }
+  }
+
+  /* Modal Animations */
+  .modal-enter {
+    animation: modalFadeIn 0.3s ease-out forwards;
+  }
+
+  .modal-exit {
+    animation: modalFadeOut 0.3s ease-out forwards;
+  }
+
+  .modal-content-enter {
+    animation: modalSlideIn 0.3s ease-out forwards;
+  }
+
+  .modal-content-exit {
+    animation: modalSlideOut 0.3s ease-out forwards;
+  }
+
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+    to {
+      opacity: 1;
+      backdrop-filter: blur(8px);
+    }
+  }
+
+  @keyframes modalFadeOut {
+    from {
+      opacity: 1;
+      backdrop-filter: blur(8px);
+    }
+    to {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+  }
+
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8) translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes modalSlideOut {
+    from {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.8) translateY(-20px);
+    }
+  }
 }

@@ -3,7 +3,7 @@
 import { useAuthStore } from '@/lib/store/authStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchUserProfile, addPet, scheduleWalk } from '@/lib/api/user';
-import { fetchAvailableWalks, acceptWalk, obtenerPaseosPaseador } from '@/lib/api/paseos';
+import { fetchAvailableWalks, acceptWalk, obtenerPaseosPaseador, obtenerMisPaseos } from '@/lib/api/paseos';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
@@ -19,15 +19,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect } from 'react';
-import { format } from "date-fns";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import { ConfirmationModal } from '@/components/shared/ConfirmationModal';
-import { es } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ScheduleWalkDialog } from '@/components/dashboard/ScheduleWalkDialog';
+import { format, addDays, startOfWeek, addWeeks, isSameDay, isToday, isBefore } from "date-fns";
+import { es } from 'date-fns/locale';
+import { ConfirmationModal } from '@/components/shared/ConfirmationModal';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import { LiveWalkCard } from '@/components/dashboard/live-walk-card';
+import { PetStatusCard } from '@/components/dashboard/pet-status-card';
+import { LiveWalkGroupCard } from '@/components/dashboard/live-walk-group-card';
 
 const TIPOS_PASEO = {
   EXPRESS: {
@@ -74,24 +74,12 @@ const TIPOS_SERVICIO = {
   }
 } as const;
 
-const ESTADOS_VACUNACION = {
-  AL_DIA: 'Al día',
-  PENDIENTE: 'Pendiente',
-  VENCIDA: 'Vencida'
-} as const;
-
 const formSchema = z.object({
   nombre: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres." }),
   especie: z.string().min(2, { message: "La especie debe tener al menos 2 caracteres." }),
   raza: z.string().min(2, { message: "La raza debe tener al menos 2 caracteres." }),
   edad: z.number().min(0, { message: "La edad debe ser un número positivo." }),
   sociable: z.boolean(),
-  alergias: z.array(z.string()),
-  discapacidades: z.array(z.string()),
-  necesitaBozal: z.boolean(),
-  estadoVacunacion: z.string().min(1, { message: "El estado de vacunación es requerido." }),
-  observaciones: z.string().optional(),
-  foto: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -109,6 +97,114 @@ const scheduleWalkSchema = z.object({
 
 type ScheduleWalkFormData = z.infer<typeof scheduleWalkSchema>;
 
+// Premium Calendar Component
+const PremiumCalendar = ({ selectedDate, onDateSelect }: { selectedDate: Date | undefined, onDateSelect: (date: Date) => void }) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const startDate = startOfWeek(currentMonth, { weekStartsOn: 1 });
+  const days = Array.from({ length: 42 }, (_, i) => addDays(startDate, i));
+  
+  const monthNames = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+  
+  const dayNames = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+  
+  return (
+    <div className="bg-white rounded-xl shadow-2xl border-0 p-4 w-80">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          type="button"
+          onClick={() => setCurrentMonth(addWeeks(currentMonth, -4))}
+          className="p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+        >
+          <span className="text-blue-500 text-lg">←</span>
+        </button>
+        
+        <h3 className="text-lg font-bold text-gray-800">
+          {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+        </h3>
+        
+        <button
+          type="button"
+          onClick={() => setCurrentMonth(addWeeks(currentMonth, 4))}
+          className="p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+        >
+          <span className="text-blue-500 text-lg">→</span>
+        </button>
+      </div>
+      
+      {/* Day Headers */}
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {dayNames.map((day) => (
+          <div key={day} className="text-center text-xs font-semibold text-gray-500 py-2">
+            {day}
+          </div>
+        ))}
+      </div>
+      
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((day, index) => {
+          const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+          const isSelected = selectedDate && isSameDay(day, selectedDate);
+          const isTodayDate = isToday(day);
+          const isPastDate = isBefore(day, today);
+          const isDisabled = !isCurrentMonth || isPastDate;
+          
+      return (
+            <button
+              key={index}
+              type="button"
+              onClick={() => !isDisabled && onDateSelect(day)}
+              disabled={isDisabled}
+              className={`
+                p-2 text-sm rounded-lg transition-all duration-200 relative
+                ${isDisabled 
+                  ? 'text-gray-300 cursor-not-allowed' 
+                  : 'text-gray-700 hover:bg-blue-50 cursor-pointer'
+                }
+                ${isSelected 
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transform scale-105' 
+                  : ''
+                }
+                ${isTodayDate && !isSelected 
+                  ? 'bg-blue-100 text-blue-700 font-semibold ring-2 ring-blue-200' 
+                  : ''
+                }
+              `}
+            >
+              {day.getDate()}
+              {isTodayDate && !isSelected && (
+                <div className="absolute bottom-0.5 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      
+      {/* Footer */}
+      <div className="mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded"></div>
+            <span>Seleccionado</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-blue-100 rounded"></div>
+            <span>Hoy</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DashboardPage() {
   const { isAuthenticated, logout, usuario, isInitialized } = useAuthStore();
   const router = useRouter();
@@ -120,6 +216,7 @@ export default function DashboardPage() {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationModalTitle, setConfirmationModalTitle] = useState('');
   const [confirmationModalMessage, setConfirmationModalMessage] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
 
   const { data: userProfile, isLoading, isError, error } = useQuery<UserProfile>({
     queryKey: ['userProfile'],
@@ -140,9 +237,7 @@ export default function DashboardPage() {
   const { data: availableWalks, isLoading: isLoadingWalks, isError: isErrorWalks, error: errorWalks } = useQuery<Paseo[]>({
     queryKey: ['availableWalks'],
     queryFn: async () => {
-      console.log('Fetching available walks...');
       const walks = await fetchAvailableWalks();
-      console.log('Available walks:', walks);
       return walks;
     },
     enabled: isAuthenticated && userProfile?.rol === 'PASEADOR',
@@ -160,11 +255,15 @@ export default function DashboardPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    if (isErrorWalks) {
-      console.error('Error fetching walks:', errorWalks);
-    }
-  }, [isErrorWalks, errorWalks]);
+  const { data: liveWalks } = useQuery<Paseo[]>({
+    queryKey: ['liveWalks'],
+    queryFn: async () => {
+      const paseos = await obtenerMisPaseos();
+      return paseos.filter(p => p.estado?.startsWith('EN_CUR') || p.estado?.startsWith('INICI'));
+    },
+    enabled: isAuthenticated && usuario?.rol === 'DUENO',
+    staleTime: 30 * 1000,
+  });
 
   const { mutate: addPetMutate } = useMutation({
     mutationFn: (newPetData: { nombre: string; especie: string; raza: string; edad: number; sociable: boolean; usuarioId: number; }) => {
@@ -179,13 +278,12 @@ export default function DashboardPage() {
       setShowConfirmationModal(true);
     },
     onError: (error: any) => {
-      console.error('Error al agregar mascota:', error);
       toast.error(error.message || 'No se pudo agregar la mascota.');
     },
   });
 
   const { mutate: scheduleWalkMutate } = useMutation({
-    mutationFn: async (walkData: { mascotaId: number; fecha: string; horaInicio: string; duracion: number; usuarioId: number; tipoServicio: string; precio: number; origenLatitud: number; origenLongitud: number; }) => {
+    mutationFn: async (walkData: { mascotaId: number; fecha: string; hora: string; horaInicio: string; duracion: number; usuarioId: number; tipoServicio: string; precio: number; origenLatitud: number; origenLongitud: number; }) => {
       return scheduleWalk(walkData);
     },
     onSuccess: () => {
@@ -198,25 +296,20 @@ export default function DashboardPage() {
       setShowConfirmationModal(true);
     },
     onError: (error: any) => {
-      console.error('Error al programar paseo:', error);
       toast.error(error.message || 'No se pudo programar el paseo.');
     },
   });
 
   const acceptWalkMutate = useMutation({
     mutationFn: async ({ walkId, paseadorId }: { walkId: number; paseadorId: number }) => {
-      console.log('Accepting walk:', { walkId, paseadorId });
       try {
         const result = await acceptWalk(walkId, paseadorId);
-        console.log('Walk accepted successfully:', result);
         return result;
       } catch (error) {
-        console.error('Error accepting walk:', error);
         throw error;
       }
     },
     onSuccess: () => {
-      console.log('Walk accepted, invalidating queries...');
       queryClient.invalidateQueries({ queryKey: ['availableWalks'] });
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
       toast.success("Paseo aceptado exitosamente!");
@@ -225,7 +318,6 @@ export default function DashboardPage() {
       setShowConfirmationModal(true);
     },
     onError: (error: any) => {
-      console.error('Error in acceptWalkMutate:', error);
       toast.error(error.message || 'No se pudo aceptar el paseo.');
     }
   });
@@ -238,12 +330,6 @@ export default function DashboardPage() {
       raza: '',
       edad: 0,
       sociable: false,
-      alergias: [],
-      discapacidades: [],
-      necesitaBozal: false,
-      estadoVacunacion: 'PENDIENTE',
-      observaciones: '',
-      foto: '',
     },
   });
 
@@ -256,6 +342,21 @@ export default function DashboardPage() {
     },
     mode: 'onTouched',
   });
+
+  // Marcar cuando el componente está montado
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Prevenir scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (openScheduleWalkDialog) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [openScheduleWalkDialog]);
 
   // Calcular precio total cuando cambian los valores
   useEffect(() => {
@@ -271,8 +372,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!isInitialized) {
-      return;
-    }
+        return;
+      }
 
     if (!isAuthenticated) {
       router.push('/login');
@@ -304,19 +405,18 @@ export default function DashboardPage() {
       const walkData = {
         mascotaId: selectedMascota.id,
         fecha: formattedDate,
+        hora: data.hora,
         horaInicio: data.hora,
         duracion: duracion,
         usuarioId: userProfile.id,
         tipoServicio: data.tipoServicio,
         precio: precioTotal,
-        origenLatitud: 0, // Valores por defecto, deberían venir del frontend
-        origenLongitud: 0 // Valores por defecto, deberían venir del frontend
+        origenLatitud: 0,
+        origenLongitud: 0
       };
 
-      console.log('Enviando datos del paseo:', walkData);
       scheduleWalkMutate(walkData);
     } catch (error) {
-      console.error('Error al preparar datos del paseo:', error);
       toast.error("Error al preparar los datos del paseo. Por favor, intente nuevamente.");
     }
   };
@@ -328,17 +428,10 @@ export default function DashboardPage() {
 
   if (isLoading || isLoadingWalks || isLoadingMisPaseos) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="flex flex-col items-center gap-8">
-          <div className="w-full max-w-4xl animate-pulse">
-            <div className="h-16 bg-gradient-to-r from-primary to-accent rounded-t-xl mb-4" />
-            <div className="h-40 bg-gray-200/40 rounded-b-xl" />
-          </div>
-          <div className="w-full max-w-4xl animate-pulse grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="h-32 bg-gray-200/60 rounded-xl" />
-            <div className="h-32 bg-gray-200/60 rounded-xl" />
-            <div className="h-32 bg-gray-200/60 rounded-xl" />
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando dashboard...</p>
         </div>
       </div>
     );
@@ -346,159 +439,190 @@ export default function DashboardPage() {
 
   if (isError || isErrorWalks) {
     return (
-      <Alert variant="destructive">
-        <ExclamationTriangleIcon className="h-4 w-4" />
-        <AlertTitle>Error al cargar datos</AlertTitle>
-        <AlertDescription>
-          {error?.message || errorWalks?.message || 'No se pudieron cargar los datos.'}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (isErrorWalks && (errorWalks as any)?.message?.includes('403')) {
-    return (
-      <Alert variant="destructive">
-        <ExclamationTriangleIcon className="h-4 w-4" />
-        <AlertTitle>Acceso denegado a paseos</AlertTitle>
-        <AlertDescription>No tienes permiso para ver los paseos de este paseador.</AlertDescription>
-      </Alert>
-    );
-  }
-  if (isErrorWalks && (errorWalks as any)?.message?.includes('404')) {
-    return (
-      <Alert variant="destructive">
-        <ExclamationTriangleIcon className="h-4 w-4" />
-        <AlertTitle>Ruta no encontrada</AlertTitle>
-        <AlertDescription>La ruta de paseador no existe. Contacta a soporte.</AlertDescription>
-      </Alert>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl p-8 shadow-lg max-w-md mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <ExclamationTriangleIcon className="h-6 w-6 text-red-500" />
+            <h3 className="text-lg font-semibold text-gray-800">Error al cargar datos</h3>
+          </div>
+          <p className="text-gray-600">{error?.message || errorWalks?.message || 'No se pudieron cargar los datos.'}</p>
+        </div>
+      </div>
     );
   }
 
   if (!isAuthenticated || !userProfile) {
     return (
-      <Alert>
-        <AlertTitle>Acceso Denegado</AlertTitle>
-        <AlertDescription>
-          Por favor, inicia sesión para ver esta página.
-        </AlertDescription>
-      </Alert>
-    );
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl p-8 shadow-lg max-w-md mx-auto text-center">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Acceso Denegado</h3>
+          <p className="text-gray-600 mb-4">Por favor, inicia sesión para ver esta página.</p>
+          <Button 
+            onClick={() => router.push('/login')}
+            className="bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold px-6 py-2 rounded-xl hover:scale-105 transition-all duration-300"
+          >
+            Iniciar Sesión
+          </Button>
+        </div>
+      </div>
+  );
   }
 
-  console.log('Rol del usuario:', userProfile.rol);
-  console.log('Renderizando paseos disponibles:', availableWalks);
-
-  if (userProfile.rol === 'PASEADOR') {
+  if (usuario?.rol === 'PASEADOR') {
     return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       <div className="container mx-auto py-8 space-y-8">
-        <Card className="w-full max-w-4xl mx-auto shadow-xl rounded-xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-primary to-accent text-primary-foreground p-6 rounded-t-xl text-center">
-            <CardTitle className="text-3xl font-extrabold tracking-tight">¡Bienvenido, {userProfile?.nombre}!</CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
+          {/* Welcome Card */}
+          <div className="bg-white rounded-xl p-8 shadow-lg">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <span className="text-white text-2xl">🏃‍♂️</span>
+              </div>
+              <h1 className="text-3xl font-light text-gray-800 mb-2">
+                ¡Bienvenido, <span className="bg-gradient-to-r from-blue-600 via-pink-500 to-purple-600 bg-clip-text text-transparent font-medium">{userProfile?.nombre}</span>!
+              </h1>
+              <p className="text-gray-600">Panel de control para paseadores</p>
+            </div>
+
+            {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-glass">
-                <h3 className="text-xl font-semibold mb-4">Paseos Disponibles</h3>
-                <p className="text-gray-600 mb-4">Paseos que puedes aceptar</p>
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-blue-200">
+                <h3 className="text-xl font-medium text-gray-800 mb-2">Paseos Disponibles</h3>
+                <p className="text-gray-600 text-sm mb-4">Encuentra y acepta nuevos paseos</p>
                 <Button 
                   onClick={() => router.push('/dashboard/paseos')}
-                  className="w-full bg-gradient-to-r from-primary to-accent text-white"
+                  className="w-full bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold py-2 rounded-xl hover:scale-105 transition-all duration-300"
                 >
                   Ver Paseos Disponibles
                 </Button>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-glass">
-                <h3 className="text-xl font-semibold mb-4">Mis Paseos</h3>
-                <p className="text-gray-600 mb-4">Paseos que has aceptado</p>
+
+              <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-6 border border-green-200">
+                <h3 className="text-xl font-medium text-gray-800 mb-2">Mis Paseos</h3>
+                <p className="text-gray-600 text-sm mb-4">Gestiona tus paseos aceptados</p>
                 <Button 
                   onClick={() => router.push('/dashboard/historial')}
-                  className="w-full bg-gradient-to-r from-primary to-accent text-white"
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 rounded-xl hover:scale-105 transition-all duration-300"
                 >
                   Ver Mis Paseos
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="w-full max-w-4xl mx-auto">
-          <CardHeader>
-            <CardTitle>Resumen de Actividad</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-glass">
-                <h4 className="text-lg font-semibold mb-2">Paseos Pendientes</h4>
-                <p className="text-3xl font-bold text-primary">
-                  {misPaseos?.filter(p => p.estado === 'PENDIENTE').length || 0}
-                </p>
+          </div>
+
+          {/* Available Walks */}
+          <div className="bg-white rounded-xl p-8 shadow-lg">
+            <h2 className="text-2xl font-light text-gray-800 mb-6">Paseos Disponibles</h2>
+            
+            {availableWalks && availableWalks.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {availableWalks.map((walk) => (
+                  <div key={walk.id} className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center">
+                        <span className="text-2xl">🐕</span>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-800">{walk.mascota?.nombre || 'Mascota'}</h3>
+                        <p className="text-sm text-gray-600">{walk.mascota?.especie || 'Especie'}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm text-gray-600 mb-4">
+                      <p><span className="font-medium">Fecha:</span> {walk.fecha}</p>
+                      <p><span className="font-medium">Hora:</span> {walk.horaInicio}</p>
+                      <p><span className="font-medium">Duración:</span> {walk.duracion} min</p>
+                      <p><span className="font-medium">Precio:</span> ${walk.precio}</p>
+                    </div>
+                    
+                    <Button 
+                      onClick={() => acceptWalkMutate.mutate({ walkId: walk.id, paseadorId: userProfile.id })}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 rounded-xl hover:scale-105 transition-all duration-300"
+                      disabled={acceptWalkMutate.isPending}
+                    >
+                      {acceptWalkMutate.isPending ? 'Aceptando...' : 'Aceptar Paseo'}
+                    </Button>
+                  </div>
+                ))}
               </div>
-              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-glass">
-                <h4 className="text-lg font-semibold mb-2">Paseos Hoy</h4>
-                <p className="text-3xl font-bold text-accent">
-                  {misPaseos?.filter(p => 
-                    new Date(p.fecha).toDateString() === new Date().toDateString()
-                  ).length || 0}
-                </p>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full mx-auto mb-6 flex items-center justify-center">
+                  <span className="text-4xl">🚶‍♂️</span>
+                </div>
+                <h3 className="text-xl font-medium text-gray-800 mb-2">No hay paseos disponibles</h3>
+                <p className="text-gray-600">Vuelve más tarde para ver nuevos paseos</p>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-glass">
-                <h4 className="text-lg font-semibold mb-2">Paseos Completados</h4>
-                <p className="text-3xl font-bold text-green-600">
-                  {misPaseos?.filter(p => p.estado === 'FINALIZADO').length || 0}
-                </p>
+            )}
               </div>
             </div>
-          </CardContent>
-        </Card>
+        
+        <ConfirmationModal 
+          isOpen={showConfirmationModal}
+          onClose={() => setShowConfirmationModal(false)}
+          title={confirmationModalTitle}
+          message={confirmationModalMessage}
+        />
+        
+        <Toaster />
       </div>
     );
-  } else if (userProfile.rol === 'DUENO') {
+  }
+
+  // DUEÑO Dashboard
     return (
-      <ErrorBoundary>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
         <div className="container mx-auto py-8">
-          <Card className="w-full max-w-4xl mx-auto shadow-xl rounded-xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary to-accent text-primary-foreground p-6 rounded-t-xl text-center">
-              <CardTitle className="text-3xl font-extrabold tracking-tight">¡Bienvenido, {userProfile?.nombre}!</CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
+        {/* Welcome Panel */}
+        <div className="bg-white rounded-xl p-8 shadow-lg mb-8">
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800">Mis Mascotas</h2>
+            <div>
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl mb-4 flex items-center justify-center">
+                <span className="text-white text-2xl">👨‍👩‍👧‍👦</span>
+              </div>
+              <h1 className="text-3xl font-light text-gray-800 mb-2">
+                ¡Bienvenido, <span className="bg-gradient-to-r from-blue-600 via-pink-500 to-purple-600 bg-clip-text text-transparent font-medium">{userProfile?.nombre}</span>!
+              </h1>
+              <p className="text-gray-600">Panel de control para dueños de mascotas</p>
+            </div>
+            
                 <Dialog open={openAddPetDialog} onOpenChange={setOpenAddPetDialog}>
                   <DialogTrigger asChild>
-                    <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105">
+                <Button className="bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold px-6 py-3 rounded-xl hover:scale-105 transition-all duration-300">
+                  <span className="mr-2">🐕</span>
                       Agregar Nueva Mascota
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px] p-6 bg-white rounded-lg shadow-2xl">
+              <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold text-gray-800">Agregar Nueva Mascota</DialogTitle>
-                      <DialogDescription className="text-gray-600">Completa los datos de tu nueva mascota.</DialogDescription>
+                  <DialogTitle>Agregar Nueva Mascota</DialogTitle>
+                  <DialogDescription>Completa los datos de tu nueva mascota.</DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={form.handleSubmit(onSubmitAddPet)} className="grid gap-6 py-4">
+                <form onSubmit={form.handleSubmit(onSubmitAddPet)} className="grid gap-4 py-4">
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="nombre" className="text-right text-gray-700 font-medium">Nombre</Label>
-                        <Input id="nombre" {...form.register('nombre')} className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" />
-                        {form.formState.errors.nombre && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.nombre.message}</p>}
+                    <Label htmlFor="nombre" className="text-right">Nombre</Label>
+                    <Input id="nombre" {...form.register('nombre')} className="col-span-3" />
+                    {form.formState.errors.nombre && <p className="col-span-4 text-red-500 text-sm">{form.formState.errors.nombre.message}</p>}
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="especie" className="text-right text-gray-700 font-medium">Especie</Label>
-                        <Input id="especie" {...form.register('especie')} className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" />
-                        {form.formState.errors.especie && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.especie.message}</p>}
+                    <Label htmlFor="especie" className="text-right">Especie</Label>
+                    <Input id="especie" {...form.register('especie')} className="col-span-3" />
+                    {form.formState.errors.especie && <p className="col-span-4 text-red-500 text-sm">{form.formState.errors.especie.message}</p>}
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="raza" className="text-right text-gray-700 font-medium">Raza</Label>
-                        <Input id="raza" {...form.register('raza')} className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" />
-                        {form.formState.errors.raza && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.raza.message}</p>}
+                    <Label htmlFor="raza" className="text-right">Raza</Label>
+                    <Input id="raza" {...form.register('raza')} className="col-span-3" />
+                    {form.formState.errors.raza && <p className="col-span-4 text-red-500 text-sm">{form.formState.errors.raza.message}</p>}
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="edad" className="text-right text-gray-700 font-medium">Edad</Label>
-                        <Input id="edad" type="number" {...form.register('edad', { valueAsNumber: true })} className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" />
-                        {form.formState.errors.edad && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.edad.message}</p>}
+                    <Label htmlFor="edad" className="text-right">Edad</Label>
+                    <Input id="edad" type="number" {...form.register('edad', { valueAsNumber: true })} className="col-span-3" />
+                    {form.formState.errors.edad && <p className="col-span-4 text-red-500 text-sm">{form.formState.errors.edad.message}</p>}
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="sociable" className="text-right text-gray-700 font-medium">Sociable</Label>
+                    <Label htmlFor="sociable" className="text-right">Sociable</Label>
                         <Select onValueChange={(value) => form.setValue('sociable', value === 'true')} defaultValue={form.watch('sociable') ? 'true' : 'false'}>
-                          <SelectTrigger className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                      <SelectTrigger className="col-span-3">
                             <SelectValue placeholder="Selecciona si es sociable" />
                           </SelectTrigger>
                           <SelectContent>
@@ -506,270 +630,86 @@ export default function DashboardPage() {
                             <SelectItem value="false">No</SelectItem>
                           </SelectContent>
                         </Select>
-                        {form.formState.errors.sociable && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.sociable.message}</p>}
                       </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="alergias" className="text-right text-gray-700 font-medium">Alergias</Label>
-                        <Input
-                          id="alergias"
-                          placeholder="Separadas por comas"
-                          value={form.watch('alergias').join(',')}
-                          onChange={e => form.setValue('alergias', e.target.value.split(',').map(a => a.trim()).filter(Boolean))}
-                          className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
-                        />
-                        {form.formState.errors.alergias && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.alergias.message}</p>}
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="discapacidades" className="text-right text-gray-700 font-medium">Discapacidades</Label>
-                        <Input
-                          id="discapacidades"
-                          placeholder="Separadas por comas"
-                          value={form.watch('discapacidades').join(',')}
-                          onChange={e => form.setValue('discapacidades', e.target.value.split(',').map(d => d.trim()).filter(Boolean))}
-                          className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
-                        />
-                        {form.formState.errors.discapacidades && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.discapacidades.message}</p>}
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="necesitaBozal" className="text-right text-gray-700 font-medium">Necesita Bozal</Label>
-                        <Select onValueChange={(value) => form.setValue('necesitaBozal', value === 'true')} defaultValue={form.watch('necesitaBozal') ? 'true' : 'false'}>
-                          <SelectTrigger className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
-                            <SelectValue placeholder="Selecciona si necesita bozal" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="true">Sí</SelectItem>
-                            <SelectItem value="false">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {form.formState.errors.necesitaBozal && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.necesitaBozal.message}</p>}
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="estadoVacunacion" className="text-right text-gray-700 font-medium">Estado de Vacunación</Label>
-                        <Select onValueChange={(value) => form.setValue('estadoVacunacion', value)} defaultValue={form.watch('estadoVacunacion')}>
-                          <SelectTrigger className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
-                            <SelectValue placeholder="Selecciona el estado de vacunación" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="AL_DIA">Al día</SelectItem>
-                            <SelectItem value="PENDIENTE">Pendiente</SelectItem>
-                            <SelectItem value="VENCIDA">Vencida</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {form.formState.errors.estadoVacunacion && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.estadoVacunacion.message}</p>}
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="observaciones" className="text-right text-gray-700 font-medium">Observaciones</Label>
-                        <textarea 
-                          id="observaciones" 
-                          {...form.register('observaciones')} 
-                          className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 rounded-md" 
-                          rows={3}
-                        />
-                        {form.formState.errors.observaciones && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.observaciones.message}</p>}
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="foto" className="text-right text-gray-700 font-medium">URL de Foto</Label>
-                        <Input 
-                          id="foto" 
-                          type="url" 
-                          {...form.register('foto')} 
-                          placeholder="https://ejemplo.com/foto.jpg"
-                          className="col-span-3 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" 
-                        />
-                        {form.formState.errors.foto && <p className="col-span-4 text-red-500 text-sm italic">{form.formState.errors.foto.message}</p>}
-                      </div>
-                      <Button type="submit" className="w-full py-3 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary-dark text-white">
+                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold py-3 rounded-xl hover:scale-105 transition-all duration-300">
                         Agregar Mascota
                       </Button>
                     </form>
                   </DialogContent>
                 </Dialog>
               </div>
-              {userProfile?.mascotas && userProfile.mascotas.length > 0 ? (
-                <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {userProfile.mascotas.map((mascota: Mascota) => (
-                    <li key={mascota.id} className="border border-gray-200 p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform transition-transform duration-200 hover:scale-105">
-                      <div>
-                        {mascota.foto && (
-                          <div className="mb-4">
-                            <img src={mascota.foto} alt={mascota.nombre} className="w-full h-48 object-cover rounded-lg" />
-                          </div>
-                        )}
-                        <p className="font-bold text-2xl text-primary-foreground mb-3">{mascota.nombre}</p>
-                        <p className="text-gray-700 text-sm mb-1"><span className="font-medium">Especie:</span> {mascota.especie}</p>
-                        <p className="text-gray-700 text-sm mb-1"><span className="font-medium">Raza:</span> {mascota.raza}</p>
-                        <p className="text-gray-700 text-sm mb-1"><span className="font-medium">Edad:</span> {mascota.edad} años</p>
-                        <p className="text-gray-700 text-sm mb-1"><span className="font-medium">Sociable:</span> {mascota.sociable ? 'Sí' : 'No'}</p>
-                        {mascota.alergias && mascota.alergias.length > 0 && (
-                          <p className="text-gray-700 text-sm mb-1"><span className="font-medium">Alergias:</span> {mascota.alergias.join(', ')}</p>
-                        )}
-                        {mascota.discapacidades && mascota.discapacidades.length > 0 && (
-                          <p className="text-gray-700 text-sm mb-1"><span className="font-medium">Discapacidades:</span> {mascota.discapacidades.join(', ')}</p>
-                        )}
-                        <p className="text-gray-700 text-sm mb-1"><span className="font-medium">Necesita Bozal:</span> {mascota.necesitaBozal ? 'Sí' : 'No'}</p>
-                        <p className={cn(
-                          "text-gray-700 text-sm mb-1",
-                          mascota.estadoVacunacion === 'AL_DIA' && "text-green-600",
-                          mascota.estadoVacunacion === 'PENDIENTE' && "text-yellow-600",
-                          mascota.estadoVacunacion === 'VENCIDA' && "text-red-600"
-                        )}>
-                          <span className="font-medium">Vacunación:</span> {mascota.estadoVacunacion}
-                        </p>
-                        {mascota.observaciones && (
-                          <p className="text-gray-700 text-sm mb-1"><span className="font-medium">Observaciones:</span> {mascota.observaciones}</p>
-                        )}
-                      </div>
-                      <Button onClick={() => handleScheduleWalkClick(mascota)} className="mt-6 w-full py-2 text-base rounded-md shadow-sm hover:shadow-md transition-all duration-200">Programar Paseo</Button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">No tienes mascotas registradas aún.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Dialog 
-            open={openScheduleWalkDialog} 
-            onOpenChange={setOpenScheduleWalkDialog}
-          >
-            <DialogContent 
-              aria-labelledby="schedule-walk-dialog-title"
-              id="schedule-walk-dialog-content"
-              className="sm:max-w-[425px] p-6 bg-white rounded-lg shadow-2xl"
-            >
-              <DialogHeader>
-                <DialogTitle id="schedule-walk-dialog-title" className="text-2xl font-bold text-gray-800">
-                  Programar Paseo
-                </DialogTitle>
-                <DialogDescription id="schedule-walk-dialog-description" className="text-gray-600">
-                  Programa un paseo para {selectedMascota?.nombre}
-                </DialogDescription>
-              </DialogHeader>
-              <form 
-                onSubmit={scheduleWalkForm.handleSubmit(onSubmitScheduleWalk)} 
-                className="grid gap-6 py-4"
-                noValidate
-              >
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="fecha" className="text-right text-gray-700 font-medium">Fecha</Label>
-                  <div className="col-span-3">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !scheduleWalkForm.watch("fecha") && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {scheduleWalkForm.watch("fecha") ? (
-                            format(scheduleWalkForm.watch("fecha"), "PPP", { locale: es })
-                          ) : (
-                            <span>Selecciona una fecha</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-4 rounded-lg shadow-xl bg-white" align="start">
-                        <Calendar
-                          value={scheduleWalkForm.watch("fecha")}
-                          onChange={(date) => {
-                            if (date && date >= new Date(new Date().setHours(0,0,0,0))) {
-                              scheduleWalkForm.setValue("fecha", date);
-                            }
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {scheduleWalkForm.formState.errors.fecha && (
-                      <p className="text-red-500 text-sm italic mt-1">
-                        {scheduleWalkForm.formState.errors.fecha.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="hora" className="text-right text-gray-700 font-medium">Hora</Label>
-                  <div className="col-span-3">
-                    <Input
-                      id="hora"
-                      type="time"
-                      step="60"
-                      {...scheduleWalkForm.register("hora")}
-                      className="border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
-                    />
-                    {scheduleWalkForm.formState.errors.hora && (
-                      <p className="text-red-500 text-sm italic mt-1">
-                        {scheduleWalkForm.formState.errors.hora.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="tipoPaseo" className="text-right text-gray-700 font-medium">Tipo de Paseo</Label>
-                  <div className="col-span-3">
-                    <Select
-                      onValueChange={(value) => scheduleWalkForm.setValue("tipoPaseo", value as keyof typeof TIPOS_PASEO)}
-                      defaultValue={scheduleWalkForm.getValues("tipoPaseo")}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecciona el tipo de paseo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(TIPOS_PASEO).map(([key, value]) => (
-                          <SelectItem key={key} value={key}>
-                            {value.nombre} - {value.duracion} min (${value.precio})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="tipoServicio" className="text-right text-gray-700 font-medium">Tipo de Servicio</Label>
-                  <div className="col-span-3">
-                    <Select
-                      onValueChange={(value) => scheduleWalkForm.setValue("tipoServicio", value as keyof typeof TIPOS_SERVICIO)}
-                      defaultValue={scheduleWalkForm.getValues("tipoServicio")}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecciona el tipo de servicio" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(TIPOS_SERVICIO).map(([key, value]) => (
-                          <SelectItem key={key} value={key}>
-                            {value.nombre} - {value.descripcion}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <p className="text-lg font-semibold text-gray-800">
-                    Precio Total: ${precioTotal.toFixed(2)}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Duración: {TIPOS_PASEO[scheduleWalkForm.getValues("tipoPaseo")]?.duracion} minutos
-                  </p>
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full py-3 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary-dark text-white"
-                  disabled={scheduleWalkForm.formState.isSubmitting}
-                >
-                  {scheduleWalkForm.formState.isSubmitting ? 'Programando...' : 'Programar Paseo'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
         </div>
-      </ErrorBoundary>
-    );
-  } else {
-    return null;
-  }
-} 
+
+        {/* Sección de Paseos en Curso */}
+        {liveWalks && liveWalks.length > 0 && (
+          <div className="mb-8">
+            <LiveWalkGroupCard walks={liveWalks} />
+          </div>
+        )}
+
+        {/* Pets Grid detallado */}
+        <div className="bg-white rounded-xl p-8 shadow-lg">
+          <h2 className="text-2xl font-light text-gray-800 mb-6">Mis Mascotas</h2>
+
+          {userProfile.mascotas && userProfile.mascotas.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userProfile.mascotas.map((mascota) => (
+                <div key={mascota.id} className="relative rounded-2xl p-6 bg-white/30 backdrop-blur-md border border-white/70 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-pink-100 rounded-xl mb-4 flex items-center justify-center">
+                    <span className="text-2xl">
+                      {mascota.especie.toLowerCase().includes('perro') ? '🐕' : mascota.especie.toLowerCase().includes('gato') ? '🐱' : '🐾'}
+                    </span>
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{mascota.nombre}</h3>
+                  <div className="space-y-1 text-sm text-gray-600 mb-4">
+                    <p><span className="font-medium">Especie:</span> {mascota.especie}</p>
+                    <p><span className="font-medium">Raza:</span> {mascota.raza}</p>
+                    <p><span className="font-medium">Edad:</span> {mascota.edad} años</p>
+                    <p><span className="font-medium">Sociable:</span> {mascota.sociable ? 'Sí' : 'No'}</p>
+                  </div>
+
+                  <Button 
+                    onClick={() => handleScheduleWalkClick(mascota)}
+                    className="w-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white font-semibold py-2 rounded-xl hover:brightness-110 active:scale-95 transition-all duration-300"
+                  >
+                    <span className="mr-2">🚶‍♂️</span>
+                    Programar Paseo
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl">🐾</div>
+              <h3 className="text-xl font-medium text-gray-800 mb-2">No tienes mascotas registradas</h3>
+              <p className="text-gray-600 mb-6">Agrega tu primera mascota para comenzar a programar paseos</p>
+              <Button 
+                onClick={() => setOpenAddPetDialog(true)}
+                className="bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold px-6 py-3 rounded-xl hover:scale-105 transition-all duration-300"
+              >
+                <span className="mr-2">🐕</span>
+                Agregar Primera Mascota
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+        {/* Nuevo diálogo premium */}
+        <Dialog open={openScheduleWalkDialog} onOpenChange={setOpenScheduleWalkDialog}>
+          <ScheduleWalkDialog form={scheduleWalkForm} onSubmit={onSubmitScheduleWalk} precioTotal={precioTotal} />
+        </Dialog>
+
+      {/* Modals and Toaster */}
+      <ConfirmationModal 
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        title={confirmationModalTitle}
+        message={confirmationModalMessage}
+      />
+      
+      <Toaster />
+    </div>
+  );
+}

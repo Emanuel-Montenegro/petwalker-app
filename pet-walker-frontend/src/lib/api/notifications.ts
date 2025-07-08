@@ -9,15 +9,10 @@ export const fetchNotifications = async (token: string): Promise<Notification[]>
       'Content-Type': 'application/json'
     },
   });
-  console.log('[Frontend] Respuesta de /api/notifications:', response.status);
   const data = await response.json();
-  console.log('[Frontend] Datos de notificaciones:', data);
   if (!response.ok) {
     console.error('[Frontend] Error al obtener notificaciones:', data);
     throw new Error('Error al obtener notificaciones');
-  }
-  if (!Array.isArray(data) || data.length === 0) {
-    console.warn('[Frontend] No hay notificaciones para mostrar.');
   }
   return data;
 };

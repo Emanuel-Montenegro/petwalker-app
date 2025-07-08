@@ -17,17 +17,14 @@ interface AuthState {
 
 const getStoredAuth = (): { usuario: UserInfo | null; token: string | null; isAuthenticated: boolean } => {
   if (typeof window === 'undefined') {
-    console.log('[AuthStore] Window undefined, retornando estado vacío');
     return { usuario: null, token: null, isAuthenticated: false };
   }
   
   try {
     const storedUser = localStorage.getItem('usuario');
     const storedToken = localStorage.getItem('token');
-    console.log('[AuthStore] localStorage - usuario:', !!storedUser, 'token:', !!storedToken);
     
     if (storedUser && storedToken) {
-      console.log('[AuthStore] Recuperando autenticación del localStorage');
       return {
         usuario: JSON.parse(storedUser),
         token: storedToken,
@@ -38,7 +35,6 @@ const getStoredAuth = (): { usuario: UserInfo | null; token: string | null; isAu
     console.error('Error al recuperar datos de autenticación:', error);
   }
   
-  console.log('[AuthStore] No hay datos válidos en localStorage');
   return { usuario: null, token: null, isAuthenticated: false };
 };
 
@@ -55,13 +51,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   ...getInitialState(),
 
   setAuth: (auth) => {
-    console.log('[AuthStore] setAuth llamado con:', auth);
     if (auth && auth.usuario) {
       // Guardar en localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('usuario', JSON.stringify(auth.usuario));
         localStorage.setItem('token', auth.token);
-        console.log('[AuthStore] Datos guardados en localStorage');
       }
       set({ isAuthenticated: true, usuario: auth.usuario, token: auth.token, isInitialized: true });
     } else {
@@ -69,7 +63,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (typeof window !== 'undefined') {
         localStorage.removeItem('usuario');
         localStorage.removeItem('token');
-        console.log('[AuthStore] localStorage limpiado');
       }
       set({ isAuthenticated: false, usuario: null, token: null, isInitialized: true });
     }
@@ -90,10 +83,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   initializeAuth: () => {
-    console.log('[AuthStore] initializeAuth llamado, isInitialized:', get().isInitialized);
     if (!get().isInitialized) {
       const storedAuth = getStoredAuth();
-      console.log('[AuthStore] Inicializando con:', storedAuth);
       set({ 
         isAuthenticated: storedAuth.isAuthenticated, 
         usuario: storedAuth.usuario, 

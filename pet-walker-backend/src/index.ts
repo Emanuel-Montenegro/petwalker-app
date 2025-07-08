@@ -75,10 +75,7 @@ registrarSocketNotificaciones(io);
 // Iniciar servidor
 const PORT = env.PORT;
 httpServer.listen(PORT, () => {
-  console.log('\x1b[42m%s\x1b[0m', '==========================================');
-  console.log('\x1b[42m%s\x1b[0m', '🚀 Backend iniciado exitosamente');
-  console.log('\x1b[42m%s\x1b[0m', `📡 Servidor corriendo en: http://localhost:${PORT}`);
-  console.log('\x1b[42m%s\x1b[0m', '==========================================');
+
 });
 
 // Manejo de errores no capturados

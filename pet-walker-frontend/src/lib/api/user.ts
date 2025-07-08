@@ -99,7 +99,6 @@ export const scheduleWalk = async (walkData: {
 
 // NUEVO: Función para obtener paseos disponibles (para paseadores)
 export const fetchAvailableWalks = async (): Promise<Paseo[]> => {
-  console.log('Fetching available walks from:', `${API_BASE_URL}/paseos/disponibles`);
   try {
     const response = await fetch(`${API_BASE_URL}/paseos/disponibles`, {
       headers: {
@@ -107,9 +106,7 @@ export const fetchAvailableWalks = async (): Promise<Paseo[]> => {
       },
       credentials: 'include',
     });
-    console.log('Response status:', response.status);
     const data = await handleResponse<Paseo[]>(response);
-    console.log('Available walks data:', data);
     return data;
   } catch (error) {
     console.error('Error fetching available walks:', error);
@@ -154,6 +151,32 @@ export const fetchRevokedTokens = async (): Promise<RevokedToken[]> => {
   return handleResponse<RevokedToken[]>(response);
 };
 
+// Actualizar nombre / email
+export const updateUserProfile = async (data: { nombre: string; email: string }): Promise<UserProfile> => {
+  const response = await fetch(`${API_BASE_URL}/usuarios/me`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<UserProfile>(response);
+};
+
+// Cambiar contraseña
+export const changePassword = async (payload: { actual: string; nueva: string }): Promise<{ mensaje: string }> => {
+  const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<{ mensaje: string }>(response);
+};
+
 export const getAuthHeaders = () => {
   const token = localStorage.getItem('auth_token');
   return {
@@ -162,8 +185,7 @@ export const getAuthHeaders = () => {
   };
 };
 
-// Puedes añadir más funciones aquí para actualizar el perfil, etc.
-
+// Obtener paseadores (administración)
 export const getAllPaseadores = async (): Promise<{ id: number; nombre: string; email: string }[]> => {
   const response = await fetch(`${API_BASE_URL}/usuarios?rol=PASEADOR`, {
     headers: {
@@ -176,4 +198,4 @@ export const getAllPaseadores = async (): Promise<{ id: number; nombre: string; 
   }
   const data = await response.json();
   return data.usuarios || [];
-}; 
+};

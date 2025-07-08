@@ -4,14 +4,12 @@ const prisma = new PrismaClient();
 
 async function seedCalificaciones() {
   try {
-    console.log('🌱 Iniciando seed de calificaciones...');
 
     // Verificar que existan usuarios
     const usuarios = await prisma.usuario.findMany();
-    console.log(`📊 Usuarios encontrados: ${usuarios.length}`);
 
     if (usuarios.length < 2) {
-      console.log('❌ Se necesitan al menos 2 usuarios para crear datos de prueba');
+      
       return;
     }
 
@@ -20,12 +18,9 @@ async function seedCalificaciones() {
     const paseador = usuarios.find(u => u.rol === 'PASEADOR');
 
     if (!dueno || !paseador) {
-      console.log('❌ Se necesita al menos un DUENO y un PASEADOR');
+      
       return;
     }
-
-    console.log(`👤 Dueño: ${dueno.nombre} (ID: ${dueno.id})`);
-    console.log(`🚶 Paseador: ${paseador.nombre} (ID: ${paseador.id})`);
 
     // Verificar si existe una mascota
     let mascota = await prisma.mascota.findFirst({
@@ -49,9 +44,9 @@ async function seedCalificaciones() {
           observaciones: 'Perro muy amigable y obediente'
         }
       });
-      console.log(`🐕 Mascota creada: ${mascota.nombre} (ID: ${mascota.id})`);
+      
     } else {
-      console.log(`🐕 Mascota encontrada: ${mascota.nombre} (ID: ${mascota.id})`);
+      
     }
 
     // Crear paseos finalizados para poder calificar
@@ -76,7 +71,7 @@ async function seedCalificaciones() {
       });
 
       paseosFinalizados.push(paseo);
-      console.log(`✅ Paseo finalizado creado: ID ${paseo.id} - ${fechaPaseo.toLocaleDateString()}`);
+      
     }
 
     // Crear algunas calificaciones de ejemplo
@@ -100,7 +95,7 @@ async function seedCalificaciones() {
       const calificacion = await prisma.calificacion.create({
         data: calData
       });
-      console.log(`⭐ Calificación creada: ${calificacion.puntuacion} estrellas para paseo ${calificacion.paseoId}`);
+      
     }
 
     // Mostrar estadísticas
@@ -112,13 +107,6 @@ async function seedCalificaciones() {
       where: { paseadorId: paseador.id },
       _avg: { puntuacion: true }
     });
-
-    console.log('\n📊 ESTADÍSTICAS:');
-    console.log(`Total de calificaciones: ${totalCalificaciones}`);
-    console.log(`Promedio del paseador: ${promedio._avg.puntuacion?.toFixed(2)} estrellas`);
-    console.log(`Paseos sin calificar: 1 (ID: ${paseosFinalizados[2].id})`);
-
-    console.log('\n✅ Seed de calificaciones completado exitosamente!');
 
   } catch (error) {
     console.error('❌ Error durante el seed:', error);

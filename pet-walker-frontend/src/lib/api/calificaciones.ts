@@ -20,8 +20,6 @@ const getAuthHeaders = () => {
 
 // Registrar una calificación
 export const registrarCalificacion = async (calificacionData: CalificacionFormData): Promise<{ mensaje: string; calificacion: Calificacion }> => {
-  console.log('🌟 Registrando calificación:', calificacionData);
-  
   const response = await fetch(`${API_BASE_URL}/calificaciones`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -30,14 +28,11 @@ export const registrarCalificacion = async (calificacionData: CalificacionFormDa
   });
   
   const result = await handleResponse<{ mensaje: string; calificacion: Calificacion }>(response);
-  console.log('✅ Calificación registrada:', result);
   return result;
 };
 
 // Obtener calificaciones de un paseador
 export const obtenerCalificacionesPaseador = async (paseadorId: number): Promise<{ calificaciones: Calificacion[] }> => {
-  console.log('📋 Obteniendo calificaciones del paseador:', paseadorId);
-  
   const response = await fetch(`${API_BASE_URL}/calificaciones/paseador/${paseadorId}`, {
     method: 'GET',
     headers: getAuthHeaders(),
@@ -45,14 +40,11 @@ export const obtenerCalificacionesPaseador = async (paseadorId: number): Promise
   });
   
   const result = await handleResponse<{ calificaciones: Calificacion[] }>(response);
-  console.log('✅ Calificaciones obtenidas:', result);
   return result;
 };
 
 // Obtener promedio de calificaciones de un paseador
 export const obtenerPromedioPaseador = async (paseadorId: number): Promise<PromedioCalificacion> => {
-  console.log('📊 Obteniendo promedio del paseador:', paseadorId);
-  
   const response = await fetch(`${API_BASE_URL}/calificaciones/paseador/${paseadorId}/promedio`, {
     method: 'GET',
     headers: getAuthHeaders(),
@@ -60,6 +52,5 @@ export const obtenerPromedioPaseador = async (paseadorId: number): Promise<Prome
   });
   
   const result = await handleResponse<PromedioCalificacion>(response);
-  console.log('✅ Promedio obtenido:', result);
   return result;
 }; 
