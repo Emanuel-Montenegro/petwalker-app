@@ -1,6 +1,6 @@
 import { Notification } from '../../types/index';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/api";
 
 export const fetchNotifications = async (token: string): Promise<Notification[]> => {
   const response = await fetch(`${API_BASE_URL}/notifications`, {

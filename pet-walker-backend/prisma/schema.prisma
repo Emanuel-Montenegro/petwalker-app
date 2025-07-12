@@ -2,43 +2,43 @@ generator client {
   provider = "prisma-client-js"
 }
 
-  datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 model Usuario {
-  id                      Int            @id @default(autoincrement())
+  id                      Int              @id @default(autoincrement())
   nombre                  String
-  email                   String         @unique
+  email                   String           @unique
   contraseña             String
   rol                     Rol
   calificacionesRecibidas Calificacion[]
+  certificados            Certificado[]
+  facturasRecibidas       Factura[]        @relation("FacturaDueño")
+  facturasEmitidas        Factura[]        @relation("FacturaPaseador")
   mascotas                Mascota[]
-  paseosAsignados         Paseo[]        @relation("UsuarioPaseos")
-  certificados Certificado[]
-  facturasEmitidas  Factura[] @relation("FacturaPaseador")
-  facturasRecibidas Factura[] @relation("FacturaDueño")
-  verificacionDNI         VerificacionDNI?
   notifications           Notification[]
+  paseosAsignados         Paseo[]          @relation("UsuarioPaseos")
+  verificacionDNI         VerificacionDNI?
 }
 
 model Mascota {
-  id        Int     @id @default(autoincrement())
-  nombre    String
-  especie   String
-  raza      String
-  edad      Int
-  sociable  Boolean
-  usuarioId Int
-  usuario   Usuario @relation(fields: [usuarioId], references: [id])
-  paseos    Paseo[]
+  id               Int      @id @default(autoincrement())
+  nombre           String
+  especie          String
+  raza             String
+  edad             Int
+  sociable         Boolean
+  usuarioId        Int
   alergias         String[]
   discapacidades   String[]
-  necesitaBozal    Boolean   @default(false)
   estadoVacunacion String
-  observaciones    String
   foto             String?
+  necesitaBozal    Boolean  @default(false)
+  observaciones    String
+  usuario          Usuario  @relation(fields: [usuarioId], references: [id])
+  paseos           Paseo[]
 }
 
 model Paseo {
@@ -57,10 +57,10 @@ model Paseo {
   origenLatitud   Float?
   origenLongitud  Float?
   calificacion    Calificacion?
+  factura         Factura?
   mascota         Mascota       @relation(fields: [mascotaId], references: [id])
   paseador        Usuario?      @relation("UsuarioPaseos", fields: [paseadorId], references: [id])
-  factura         Factura?
-  puntosGPS PuntoGPS[]
+  puntosGPS       PuntoGPS[]
 }
 
 model Calificacion {
@@ -72,6 +72,68 @@ model Calificacion {
   creadoEn   DateTime @default(now())
   paseador   Usuario  @relation(fields: [paseadorId], references: [id])
   paseo      Paseo    @relation(fields: [paseoId], references: [id])
+}
+
+model Certificado {
+  id          Int               @id @default(autoincrement())
+  usuarioId   Int
+  archivo     String
+  descripcion String?
+  estado      EstadoCertificado @default(PENDIENTE)
+  creadoEn    DateTime          @default(now())
+  usuario     Usuario           @relation(fields: [usuarioId], references: [id])
+}
+
+model Factura {
+  id         Int      @id @default(autoincrement())
+  paseoId    Int      @unique
+  duenioId   Int
+  paseadorId Int
+  monto      Float
+  fecha      DateTime @default(now())
+  duenio     Usuario  @relation("FacturaDueño", fields: [duenioId], references: [id])
+  paseador   Usuario  @relation("FacturaPaseador", fields: [paseadorId], references: [id])
+  paseo      Paseo    @relation(fields: [paseoId], references: [id])
+}
+
+model PuntoGPS {
+  id        Int      @id @default(autoincrement())
+  paseoId   Int
+  latitud   Float
+  longitud  Float
+  timestamp DateTime @default(now())
+  precision Float?
+  velocidad Float?
+  altitud   Float?
+  bateria   Int?
+  paseo     Paseo    @relation(fields: [paseoId], references: [id])
+
+  @@index([paseoId, timestamp])
+  @@index([timestamp])
+}
+
+model VerificacionDNI {
+  id              Int                   @id @default(autoincrement())
+  usuarioId       Int                   @unique
+  tipoDocumento   String?
+  numeroDocumento String?
+  urlFrente       String?
+  urlDorso        String?
+  estado          EstadoVerificacionDNI @default(PENDIENTE)
+  creadoEn        DateTime              @default(now())
+  actualizadoEn   DateTime              @updatedAt
+  usuario         Usuario               @relation(fields: [usuarioId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  mensaje   String
+  leida     Boolean  @default(false)
+  tipo      String
+  data      Json?
+  creadaEn  DateTime @default(now())
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
 }
 
 enum Rol {
@@ -88,73 +150,14 @@ enum EstadoPaseo {
   CANCELADO
 }
 
-model Certificado {
-  id          Int      @id @default(autoincrement())
-  usuarioId   Int
-  archivo     String
-  descripcion String?
-  estado      EstadoCertificado @default(PENDIENTE)
-  creadoEn    DateTime @default(now())
-
-  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
-}
-
 enum EstadoCertificado {
   PENDIENTE
   APROBADO
   RECHAZADO
 }
 
-model Factura {
-  id         Int      @id @default(autoincrement())
-  paseoId    Int      @unique
-  duenioId   Int
-  paseadorId Int
-  monto      Float
-  fecha      DateTime @default(now())
-
-  paseo      Paseo    @relation(fields: [paseoId], references: [id])
-  duenio     Usuario  @relation("FacturaDueño", fields: [duenioId], references: [id])
-  paseador   Usuario  @relation("FacturaPaseador", fields: [paseadorId], references: [id])
-}
-
-model PuntoGPS {
-  id        Int      @id @default(autoincrement())
-  paseoId   Int
-  latitud   Float
-  longitud  Float
-  timestamp DateTime @default(now())
-
-  paseo     Paseo    @relation(fields: [paseoId], references: [id])
-}
-
-model VerificacionDNI {
-  id              Int                   @id @default(autoincrement())
-  usuarioId       Int                   @unique
-  tipoDocumento   String?
-  numeroDocumento String?
-  urlFrente       String?
-  urlDorso        String?
-  estado          EstadoVerificacionDNI @default(PENDIENTE)
-  creadoEn        DateTime              @default(now())
-  actualizadoEn   DateTime              @updatedAt
-
-  usuario         Usuario               @relation(fields: [usuarioId], references: [id])
-}
-
 enum EstadoVerificacionDNI {
   PENDIENTE
   APROBADO
   RECHAZADO
-}
-
-model Notification {
-  id        Int      @id @default(autoincrement())
-  usuarioId Int
-  usuario   Usuario @relation(fields: [usuarioId], references: [id])
-  mensaje   String
-  leida     Boolean @default(false)
-  tipo      String  // ejemplo: 'PASEO_ACEPTADO', 'MENSAJE', etc
-  data      Json?
-  creadaEn  DateTime @default(now())
 }

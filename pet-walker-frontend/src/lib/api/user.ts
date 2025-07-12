@@ -6,7 +6,7 @@ import { LoginData, AuthResponse, UserProfile, RegisterData, Mascota, Paseo, Log
 // Por ejemplo, una interfaz para el perfil del usuario
 // import { UserProfile } from "@/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/api";
 
 // Función para manejar respuestas HTTP
 const handleResponse = async <T>(response: Response): Promise<T> => {
@@ -49,8 +49,12 @@ export const registerUser = async (userData: RegisterData): Promise<AuthResponse
 
 // Función para obtener el perfil del usuario actual
 export const fetchUserProfile = async (): Promise<UserProfile> => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const response = await fetch(`${API_BASE_URL}/usuarios/me`, {
     credentials: 'include',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
   });
   return handleResponse<UserProfile>(response);
 };
@@ -198,4 +202,4 @@ export const getAllPaseadores = async (): Promise<{ id: number; nombre: string; 
   }
   const data = await response.json();
   return data.usuarios || [];
-};
+}; 

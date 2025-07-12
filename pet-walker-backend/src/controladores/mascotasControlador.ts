@@ -1,8 +1,6 @@
 import prisma from '../lib/prisma';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { RequestConUsuario } from '../types/express';
-import { Rol } from '@prisma/client';
-import { generarFactura } from './facturasControlador';
 
 export const registrarMascota = async (req: RequestConUsuario, res: Response) => {
   const {
@@ -19,7 +17,6 @@ export const registrarMascota = async (req: RequestConUsuario, res: Response) =>
     foto
   } = req.body;
 
-  // Valores por defecto para los campos avanzados
   const mascotaData = {
     nombre,
     especie,
@@ -39,7 +36,6 @@ export const registrarMascota = async (req: RequestConUsuario, res: Response) =>
     const mascota = await prisma.mascota.create({
       data: mascotaData
     });
-
     res.status(201).json({ mensaje: 'Mascota registrada', mascota });
   } catch (error) {
     console.error(error);

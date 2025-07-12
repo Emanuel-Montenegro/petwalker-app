@@ -41,6 +41,7 @@ const CalificacionesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,11 +114,11 @@ const CalificacionesPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <span className="text-gray-700 font-medium">Cargando calificaciones...</span>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-blue-400"></div>
+            <span className="text-gray-700 dark:text-gray-300 font-medium">Cargando calificaciones...</span>
           </div>
         </div>
       </div>
@@ -126,66 +127,62 @@ const CalificacionesPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 max-w-md mx-auto text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 max-w-md mx-auto text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <span className="text-2xl">⚠️</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Error al cargar</h3>
-          <p className="text-red-600 mb-4">{error}</p>
-          <Button 
-            onClick={() => window.location.reload()} 
-            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-xl hover:scale-105 transition-all duration-300"
-          >
-            Intentar de nuevo
-          </Button>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Error al cargar</h3>
+          <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+            className="bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 text-white px-6 py-2 rounded-xl hover:scale-105 transition-all duration-300"
+            >
+              Intentar de nuevo
+            </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
-      <div className="container mx-auto py-8 space-y-8">
-        
-        {/* Header */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center">
-                <StarIcon className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800">Sistema de Calificaciones</h1>
-                <p className="text-gray-600">Explora las reseñas y calificaciones de nuestros paseadores</p>
-              </div>
+    <div className="w-full max-w-3xl mx-auto py-6 px-2 pr-6 sm:px-4 sm:pr-12 space-y-8 min-h-screen overflow-x-hidden max-w-[98vw]">
+      <div className="bg-white dark:bg-gray-800 rounded-xl mx-auto p-2 sm:p-8 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 mb-8 text-center w-full max-w-[98vw] sm:max-w-2xl min-w-0 text-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 dark:from-yellow-600 dark:to-orange-600 rounded-2xl flex items-center justify-center">
+              <StarIcon className="h-6 w-6 text-white" />
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-              <span className="text-yellow-600 text-sm font-semibold">{paseadores.length} paseadores</span>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Sistema de Calificaciones</h1>
+              <p className="text-gray-600 dark:text-gray-400">Explora las reseñas y calificaciones de nuestros paseadores</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-yellow-500 dark:bg-yellow-400 rounded-full animate-pulse"></div>
+            <span className="text-yellow-600 dark:text-yellow-400 text-sm font-semibold">{paseadores.length} paseadores</span>
+          </div>
         </div>
+      </div>
 
-        {/* Filters and Search */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
               <Input
                 placeholder="Buscar paseador..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+              className="pl-10 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
               />
             </div>
             
             <div className="flex items-center gap-2">
-              <FilterIcon className="h-4 w-4 text-gray-500" />
+              <FilterIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               <select
                 value={filtroPromedio || ''}
                 onChange={(e) => setFiltroPromedio(e.target.value ? Number(e.target.value) : null)}
-                className="flex h-10 w-full rounded-xl border border-gray-300 bg-background px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+              className="flex h-10 w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-700 dark:text-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="">Todas las calificaciones</option>
                 <option value="4.5">4.5+ estrellas</option>
@@ -194,134 +191,136 @@ const CalificacionesPage = () => {
               </select>
             </div>
 
-            <div className="flex items-center gap-2 text-gray-600">
-              <UsersIcon className="h-4 w-4" />
-              <span className="text-sm font-medium">
-                {paseadoresFiltrados.length} paseador{paseadoresFiltrados.length !== 1 ? 'es' : ''} encontrado{paseadoresFiltrados.length !== 1 ? 's' : ''}
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+            <UsersIcon className="h-4 w-4" />
+            <span className="text-sm font-medium">
+              {paseadoresFiltrados.length} paseador{paseadoresFiltrados.length !== 1 ? 'es' : ''} encontrado{paseadoresFiltrados.length !== 1 ? 's' : ''}
               </span>
             </div>
           </div>
-        </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Paseadores List */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <UsersIcon className="h-5 w-5" />
-                Paseadores Disponibles
-              </h3>
-              
-              {paseadoresFiltrados.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-                    <StarIcon className="h-12 w-12 text-gray-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    No se encontraron paseadores
-                  </h3>
-                  <p className="text-gray-600">
-                    Intenta ajustar los filtros de búsqueda.
-                  </p>
+      <div className="grid grid-cols-1 gap-y-6 w-full max-w-full min-w-0">
+        <div className="lg:col-span-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-6 flex items-center gap-2">
+              <UsersIcon className="h-5 w-5" />
+              Paseadores Disponibles
+            </h3>
+            
+            {paseadoresFiltrados.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto mb-6 flex items-center justify-center">
+                  <StarIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {paginatedPaseadores.map((paseador) => (
-                    <div
-                      key={paseador.id}
-                      className={`bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-4 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-102 ${
-                        paseadorSeleccionado === paseador.id ? 'ring-2 ring-blue-500 shadow-lg' : ''
-                      }`}
-                      onClick={() => setPaseadorSeleccionado(paseador.id)}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center">
-                          <UserIcon className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-800">{paseador.nombre}</h4>
-                          <p className="text-sm text-gray-600">{paseador.email}</p>
-                        </div>
-                        <div className="text-2xl">
-                          {obtenerIconoPromedio(paseador.promedio)}
-                        </div>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                  No se encontraron paseadores
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Intenta ajustar los filtros de búsqueda.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {paginatedPaseadores.map((paseador) => (
+                  <div
+                    key={paseador.id} 
+                    className="bg-white dark:bg-gray-700 rounded-xl mx-auto p-2 sm:p-8 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-600 mb-8 w-full max-w-[98vw] sm:max-w-2xl min-w-0 text-sm hover:shadow-xl transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setPaseadorSeleccionado(paseador.id);
+                      setShowModal(true);
+                    }}
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-800 dark:to-purple-800 rounded-xl flex items-center justify-center">
+                        <UserIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                       </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800 dark:text-gray-200">{paseador.nombre}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{paseador.email}</p>
+                      </div>
+                      <div className="text-2xl">
+                        {obtenerIconoPromedio(paseador.promedio)}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
                             <Rating value={paseador.promedio} readonly size="sm" />
-                            <span className="text-sm font-medium text-gray-700">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               {paseador.promedio.toFixed(1)}
                             </span>
                           </div>
-                          <Badge className={`${obtenerColorPromedio(paseador.promedio)} text-xs px-2 py-1 rounded-lg`}>
-                            {obtenerTextoPromedio(paseador.promedio)}
-                          </Badge>
-                        </div>
-                        
-                        <div className="text-xs text-gray-500 flex items-center gap-1">
-                          <AwardIcon className="h-3 w-3" />
-                          {paseador.totalCalificaciones} calificacion{paseador.totalCalificaciones !== 1 ? 'es' : ''}
+                        <Badge className={`${obtenerColorPromedio(paseador.promedio)} text-xs px-2 py-1 rounded-lg`}>
+                              {obtenerTextoPromedio(paseador.promedio)}
+                            </Badge>
+                      </div>
+                      
+                      <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <AwardIcon className="h-3 w-3" />
+                              {paseador.totalCalificaciones} calificacion{paseador.totalCalificaciones !== 1 ? 'es' : ''}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                ))}
+              </div>
+            )}
 
-              {/* Pagination */}
-              {paseadoresFiltrados.length > PAGE_SIZE && (
-                <div className="flex justify-center mt-6 gap-2">
-                  <Button 
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
-                    disabled={currentPage === 1}
-                    className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-xl hover:scale-105 transition-all duration-300 disabled:opacity-50"
-                  >
-                    Anterior
-                  </Button>
-                  <span className="px-4 py-2 text-gray-600 font-medium">
-                    Página {currentPage} de {Math.ceil(paseadoresFiltrados.length / PAGE_SIZE)}
-                  </span>
-                  <Button 
-                    onClick={() => setCurrentPage(p => Math.min(Math.ceil(paseadoresFiltrados.length / PAGE_SIZE), p + 1))} 
-                    disabled={currentPage === Math.ceil(paseadoresFiltrados.length / PAGE_SIZE)}
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-xl hover:scale-105 transition-all duration-300 disabled:opacity-50"
-                  >
-                    Siguiente
-                  </Button>
-                </div>
-              )}
-            </div>
+            {/* Pagination */}
+            {paseadoresFiltrados.length > PAGE_SIZE && (
+              <div className="flex justify-center mt-6 gap-2">
+                <Button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+                  disabled={currentPage === 1}
+                  className="bg-gradient-to-r from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700 text-white px-4 py-2 rounded-xl hover:scale-105 transition-all duration-300 disabled:opacity-50"
+                >
+                  Anterior
+                </Button>
+                <span className="px-4 py-2 text-gray-600 dark:text-gray-400 font-medium">
+                  Página {currentPage} de {Math.ceil(paseadoresFiltrados.length / PAGE_SIZE)}
+                </span>
+                <Button 
+                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(paseadoresFiltrados.length / PAGE_SIZE), p + 1))} 
+                  disabled={currentPage === Math.ceil(paseadoresFiltrados.length / PAGE_SIZE)}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 text-white px-4 py-2 rounded-xl hover:scale-105 transition-all duration-300 disabled:opacity-50"
+                >
+                  Siguiente
+                </Button>
+              </div>
+            )}
           </div>
+              </div>
 
-          {/* Paseador Details */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 sticky top-8">
-              {paseadorSeleccionado ? (
+        {/* Modal de Calificaciones */}
+        {showModal && paseadorSeleccionado && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+            <div className="w-full max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+              <div className="p-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                  <StarIcon className="h-6 w-6" />
+                  Calificaciones de {paseadores.find(p => p.id === paseadorSeleccionado)?.nombre}
+                </h2>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-6 max-h-[80vh] overflow-y-auto">
                 <CalificacionesPaseador
                   paseadorId={paseadorSeleccionado}
-                  paseadorNombre={paseadoresFiltrados.find(p => p.id === paseadorSeleccionado)?.nombre}
-                  mostrarTitulo={true}
+                  paseadorNombre={paseadores.find(p => p.id === paseadorSeleccionado)?.nombre}
+                  mostrarTitulo={false}
                 />
-              ) : (
-                <div className="p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                    <TrendingUpIcon className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    Selecciona un paseador
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Haz clic en un paseador para ver sus calificaciones detalladas y comentarios.
-                  </p>
-                </div>
-              )}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        )}
+            </div>
     </div>
   );
 };

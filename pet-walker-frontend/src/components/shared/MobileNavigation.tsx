@@ -12,7 +12,7 @@ import PetWalkerLogo from './PetWalkerLogo';
 import { toast } from 'sonner';
 import io from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
 
 const MobileNavigation = () => {
   const { logout, usuario, token, isAuthenticated, isInitialized, initializeAuth } = useAuthStore();

@@ -20,7 +20,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ScheduleWalkDialog } from '@/components/dashboard/ScheduleWalkDialog';
+import BottomSheetScheduleModal from '@/components/shared/BottomSheetScheduleModal';
+import PremiumScheduleModal from '@/components/shared/PremiumScheduleModal';
 import { format, addDays, startOfWeek, addWeeks, isSameDay, isToday, isBefore } from "date-fns";
 import { es } from 'date-fns/locale';
 import { ConfirmationModal } from '@/components/shared/ConfirmationModal';
@@ -28,6 +29,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { LiveWalkCard } from '@/components/dashboard/live-walk-card';
 import { PetStatusCard } from '@/components/dashboard/pet-status-card';
 import { LiveWalkGroupCard } from '@/components/dashboard/live-walk-group-card';
+import { useIsMobile } from '@/lib/utils';
+import ClientHydrationWrapper from '@/components/shared/ClientHydrationWrapper';
 
 const TIPOS_PASEO = {
   EXPRESS: {
@@ -426,6 +429,8 @@ export default function DashboardPage() {
     setOpenScheduleWalkDialog(true);
   };
 
+  const isMobile = useIsMobile();
+
   if (isLoading || isLoadingWalks || isLoadingMisPaseos) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
@@ -470,39 +475,38 @@ export default function DashboardPage() {
 
   if (usuario?.rol === 'PASEADOR') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
-      <div className="container mx-auto py-8 space-y-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
           {/* Welcome Card */}
-          <div className="bg-white rounded-xl p-8 shadow-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
                 <span className="text-white text-2xl">🏃‍♂️</span>
               </div>
-              <h1 className="text-3xl font-light text-gray-800 mb-2">
+              <h1 className="text-3xl font-light text-gray-800 dark:text-gray-200 mb-2">
                 ¡Bienvenido, <span className="bg-gradient-to-r from-blue-600 via-pink-500 to-purple-600 bg-clip-text text-transparent font-medium">{userProfile?.nombre}</span>!
               </h1>
-              <p className="text-gray-600">Panel de control para paseadores</p>
+              <p className="text-gray-600 dark:text-gray-400">Panel de control para paseadores</p>
             </div>
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-blue-200">
-                <h3 className="text-xl font-medium text-gray-800 mb-2">Paseos Disponibles</h3>
-                <p className="text-gray-600 text-sm mb-4">Encuentra y acepta nuevos paseos</p>
+              <div className="bg-gradient-to-br from-blue-50 to-white dark:from-gray-700 dark:to-gray-600 rounded-xl p-6 border border-blue-200 dark:border-gray-600">
+                <h3 className="text-xl font-medium text-gray-800 dark:text-gray-200 mb-2">Paseos Disponibles</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Encuentra y acepta nuevos paseos</p>
                 <Button 
                   onClick={() => router.push('/dashboard/paseos')}
-                  className="w-full bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold py-2 rounded-xl hover:scale-105 transition-all duration-300"
+                  className="w-full bg-gradient-to-r from-blue-500 to-pink-500 dark:from-blue-600 dark:to-pink-600 text-white font-semibold py-2 rounded-xl hover:scale-105 transition-all duration-300"
                 >
                   Ver Paseos Disponibles
                 </Button>
               </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-6 border border-green-200">
-                <h3 className="text-xl font-medium text-gray-800 mb-2">Mis Paseos</h3>
-                <p className="text-gray-600 text-sm mb-4">Gestiona tus paseos aceptados</p>
+              <div className="bg-gradient-to-br from-green-50 to-white dark:from-gray-700 dark:to-gray-600 rounded-xl p-6 border border-green-200 dark:border-gray-600">
+                <h3 className="text-xl font-medium text-gray-800 dark:text-gray-200 mb-2">Mis Paseos</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Gestiona tus paseos aceptados</p>
                 <Button 
                   onClick={() => router.push('/dashboard/historial')}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 rounded-xl hover:scale-105 transition-all duration-300"
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 text-white font-semibold py-2 rounded-xl hover:scale-105 transition-all duration-300"
                 >
                   Ver Mis Paseos
                 </Button>
@@ -511,24 +515,24 @@ export default function DashboardPage() {
           </div>
 
           {/* Available Walks */}
-          <div className="bg-white rounded-xl p-8 shadow-lg">
-            <h2 className="text-2xl font-light text-gray-800 mb-6">Paseos Disponibles</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-light text-gray-800 dark:text-gray-200 mb-6">Paseos Disponibles</h2>
             
             {availableWalks && availableWalks.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {availableWalks.map((walk) => (
-                  <div key={walk.id} className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
+                  <div key={walk.id} className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-600 rounded-xl p-6 border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center">
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-600 dark:to-orange-700 rounded-xl flex items-center justify-center">
                         <span className="text-2xl">🐕</span>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800">{walk.mascota?.nombre || 'Mascota'}</h3>
-                        <p className="text-sm text-gray-600">{walk.mascota?.especie || 'Especie'}</p>
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">{walk.mascota?.nombre || 'Mascota'}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{walk.mascota?.especie || 'Especie'}</p>
                       </div>
                     </div>
                     
-                    <div className="space-y-2 text-sm text-gray-600 mb-4">
+                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
                       <p><span className="font-medium">Fecha:</span> {walk.fecha}</p>
                       <p><span className="font-medium">Hora:</span> {walk.horaInicio}</p>
                       <p><span className="font-medium">Duración:</span> {walk.duracion} min</p>
@@ -537,7 +541,7 @@ export default function DashboardPage() {
                     
                     <Button 
                       onClick={() => acceptWalkMutate.mutate({ walkId: walk.id, paseadorId: userProfile.id })}
-                      className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 rounded-xl hover:scale-105 transition-all duration-300"
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 text-white font-semibold py-2 rounded-xl hover:scale-105 transition-all duration-300"
                       disabled={acceptWalkMutate.isPending}
                     >
                       {acceptWalkMutate.isPending ? 'Aceptando...' : 'Aceptar Paseo'}
@@ -547,15 +551,14 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full mx-auto mb-6 flex items-center justify-center">
+                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-full mx-auto mb-6 flex items-center justify-center">
                   <span className="text-4xl">🚶‍♂️</span>
                 </div>
-                <h3 className="text-xl font-medium text-gray-800 mb-2">No hay paseos disponibles</h3>
-                <p className="text-gray-600">Vuelve más tarde para ver nuevos paseos</p>
+                <h3 className="text-xl font-medium text-gray-800 dark:text-gray-200 mb-2">No hay paseos disponibles</h3>
+                <p className="text-gray-600 dark:text-gray-400">Vuelve más tarde para ver nuevos paseos</p>
               </div>
             )}
               </div>
-            </div>
         
         <ConfirmationModal 
           isOpen={showConfirmationModal}
@@ -571,137 +574,291 @@ export default function DashboardPage() {
 
   // DUEÑO Dashboard
     return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
-        <div className="container mx-auto py-8">
+    <>
         {/* Welcome Panel */}
-        <div className="bg-white rounded-xl p-8 shadow-lg mb-8">
-              <div className="flex justify-between items-center mb-8">
-            <div>
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl mb-4 flex items-center justify-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 shadow-lg dark:shadow-gray-900/50 mb-8 border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <div className="flex-1">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 rounded-2xl mb-4 flex items-center justify-center">
                 <span className="text-white text-2xl">👨‍👩‍👧‍👦</span>
               </div>
-              <h1 className="text-3xl font-light text-gray-800 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-light text-gray-800 dark:text-gray-200 mb-2">
                 ¡Bienvenido, <span className="bg-gradient-to-r from-blue-600 via-pink-500 to-purple-600 bg-clip-text text-transparent font-medium">{userProfile?.nombre}</span>!
               </h1>
-              <p className="text-gray-600">Panel de control para dueños de mascotas</p>
+              <p className="text-gray-600 dark:text-gray-400">Panel de control para dueños de mascotas</p>
             </div>
             
-                <Dialog open={openAddPetDialog} onOpenChange={setOpenAddPetDialog}>
-                  <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold px-6 py-3 rounded-xl hover:scale-105 transition-all duration-300">
+                <Button onClick={() => setOpenAddPetDialog(true)} className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-pink-500 dark:from-blue-600 dark:to-pink-600 text-white font-semibold px-6 py-3 rounded-xl mt-4 sm:mt-0">
                   <span className="mr-2">🐕</span>
                       Agregar Nueva Mascota
                     </Button>
-                  </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                  <DialogTitle>Agregar Nueva Mascota</DialogTitle>
-                  <DialogDescription>Completa los datos de tu nueva mascota.</DialogDescription>
-                    </DialogHeader>
-                <form onSubmit={form.handleSubmit(onSubmitAddPet)} className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="nombre" className="text-right">Nombre</Label>
-                    <Input id="nombre" {...form.register('nombre')} className="col-span-3" />
-                    {form.formState.errors.nombre && <p className="col-span-4 text-red-500 text-sm">{form.formState.errors.nombre.message}</p>}
                       </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="especie" className="text-right">Especie</Label>
-                    <Input id="especie" {...form.register('especie')} className="col-span-3" />
-                    {form.formState.errors.especie && <p className="col-span-4 text-red-500 text-sm">{form.formState.errors.especie.message}</p>}
                       </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="raza" className="text-right">Raza</Label>
-                    <Input id="raza" {...form.register('raza')} className="col-span-3" />
-                    {form.formState.errors.raza && <p className="col-span-4 text-red-500 text-sm">{form.formState.errors.raza.message}</p>}
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edad" className="text-right">Edad</Label>
-                    <Input id="edad" type="number" {...form.register('edad', { valueAsNumber: true })} className="col-span-3" />
-                    {form.formState.errors.edad && <p className="col-span-4 text-red-500 text-sm">{form.formState.errors.edad.message}</p>}
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="sociable" className="text-right">Sociable</Label>
-                        <Select onValueChange={(value) => form.setValue('sociable', value === 'true')} defaultValue={form.watch('sociable') ? 'true' : 'false'}>
-                      <SelectTrigger className="col-span-3">
-                            <SelectValue placeholder="Selecciona si es sociable" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="true">Sí</SelectItem>
-                            <SelectItem value="false">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold py-3 rounded-xl hover:scale-105 transition-all duration-300">
-                        Agregar Mascota
-                      </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
-        </div>
 
-        {/* Sección de Paseos en Curso */}
+
+
+        {/* Paseo en Curso */}
         {liveWalks && liveWalks.length > 0 && (
-          <div className="mb-8">
-            <LiveWalkGroupCard walks={liveWalks} />
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 border border-green-200 dark:border-gray-600 rounded-2xl p-6 shadow-lg mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-green-500 dark:bg-green-600 rounded-xl flex items-center justify-center">
+                  <span className="text-white text-2xl">⏰</span>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold text-green-800 dark:text-green-300">Paseo en Curso</h2>
+                  <p className="text-green-600 dark:text-green-400">Seguimiento en tiempo real</p>
+                </div>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 dark:bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-green-600 dark:text-green-400 text-sm font-semibold">● En vivo</span>
+              </div>
+            </div>
+            {liveWalks.map((paseo) => (
+              <div key={paseo.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2">
+                <span className="text-3xl">{paseo.mascota?.especie?.toLowerCase().includes('gato') ? '🐱' : '🐶'}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-gray-800 dark:text-gray-200">{paseo.mascota?.nombre}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {new Date(paseo.fecha).toLocaleDateString('es-ES', { 
+                      day: '2-digit', 
+                      month: '2-digit' 
+                    })} • {paseo.horaInicio?.slice(0, 5) || 'N/A'}
+                  </div>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 text-white text-xs sm:text-sm px-3 py-2 rounded-lg whitespace-nowrap" 
+                  onClick={() => router.push(`/dashboard/paseos/${paseo.id}`)}
+                >
+                  Ver Tracking
+                </Button>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Pets Grid detallado */}
-        <div className="bg-white rounded-xl p-8 shadow-lg">
-          <h2 className="text-2xl font-light text-gray-800 mb-6">Mis Mascotas</h2>
+        {/* Widgets Premium */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          {/* Estado de Mascotas */}
+          <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 shadow-xl glass-morphism animate-fade-in flex flex-col justify-between min-h-[220px] border border-green-200/50 dark:border-gray-600">
+            <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-4 text-lg">Estado de Mascotas</h3>
+            {userProfile.mascotas?.length ? userProfile.mascotas.slice(0,2).map((m) => (
+              <div key={m.id} className="flex flex-col gap-3 mb-4 p-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-700 bg-white/50 dark:bg-gray-800/50">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-2xl">{m.especie?.toLowerCase().includes('gato') ? '🐱' : '🐶'}</span>
+                  <span className="font-medium text-gray-800 dark:text-gray-200">{m.nombre}</span>
+                  <span className={`text-xs px-2 py-1 rounded-lg ${liveWalks?.some(w => w.mascotaId === m.id) ? 'bg-blue-200 text-blue-700 dark:bg-blue-800 dark:text-blue-300 animate-pulse' : 'bg-gray-200 text-gray-500 dark:bg-gray-600 dark:text-gray-400'}`}>
+                    {liveWalks?.some(w => w.mascotaId === m.id) ? 'En paseo' : 'Disponible'}
+                  </span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                  <Button size="sm" variant="outline" className="flex-1 h-8 text-xs rounded-lg border-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 min-w-0 whitespace-nowrap" onClick={() => router.push(`/dashboard/mascotas/${m.id}`)}>
+                    Ver
+                  </Button>
+                  <Button size="sm" className="flex-1 h-8 text-xs rounded-lg bg-gradient-to-r from-blue-500 to-green-500 dark:from-blue-600 dark:to-green-600 min-w-0 whitespace-nowrap" onClick={() => { setSelectedMascota(m); setOpenScheduleWalkDialog(true); }}>
+                    Agendar
+                  </Button>
+                </div>
+              </div>
+            )) : (
+              <div className="text-center py-4">
+                <span className="text-4xl mb-2 block">🐾</span>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">No tienes mascotas registradas</div>
+                <Button size="sm" onClick={() => setOpenAddPetDialog(true)} className="bg-gradient-to-r from-blue-500 to-green-500 dark:from-blue-600 dark:to-green-600 text-white text-xs">
+                  Agregar Mascota
+                </Button>
+              </div>
+            )}
+          </div>
 
-          {userProfile.mascotas && userProfile.mascotas.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userProfile.mascotas.map((mascota) => (
-                <div key={mascota.id} className="relative rounded-2xl p-6 bg-white/30 backdrop-blur-md border border-white/70 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-pink-100 rounded-xl mb-4 flex items-center justify-center">
-                    <span className="text-2xl">
-                      {mascota.especie.toLowerCase().includes('perro') ? '🐕' : mascota.especie.toLowerCase().includes('gato') ? '🐱' : '🐾'}
-                    </span>
-                  </div>
-
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{mascota.nombre}</h3>
-                  <div className="space-y-1 text-sm text-gray-600 mb-4">
-                    <p><span className="font-medium">Especie:</span> {mascota.especie}</p>
-                    <p><span className="font-medium">Raza:</span> {mascota.raza}</p>
-                    <p><span className="font-medium">Edad:</span> {mascota.edad} años</p>
-                    <p><span className="font-medium">Sociable:</span> {mascota.sociable ? 'Sí' : 'No'}</p>
-                  </div>
-
-                  <Button 
-                    onClick={() => handleScheduleWalkClick(mascota)}
-                    className="w-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white font-semibold py-2 rounded-xl hover:brightness-110 active:scale-95 transition-all duration-300"
-                  >
-                    <span className="mr-2">🚶‍♂️</span>
+          {/* Próximos Paseos */}
+          <div className="bg-gradient-to-r from-pink-100 to-blue-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 shadow-xl glass-morphism animate-fade-in flex flex-col justify-between min-h-[220px] border border-pink-200/50 dark:border-gray-600">
+            <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-4 text-lg">Próximos Paseos</h3>
+            {(() => {
+              const proximosPaseos = misPaseos?.filter(p => p.estado === 'ACEPTADO') || [];
+              return proximosPaseos.length > 0 ? (
+                <div className="space-y-3">
+                  {proximosPaseos.slice(0, 2).map((p) => (
+                    <div key={p.id} className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{p.mascota?.especie?.toLowerCase().includes('gato') ? '🐱' : '🐶'}</span>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-800 dark:text-gray-200 text-sm">{p.mascota?.nombre}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{p.fecha} • {p.horaInicio}</div>
+                          <span className="text-xs bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded mt-1 inline-block">
+                            Aceptado
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {proximosPaseos.length > 2 && (
+                    <div className="text-center">
+                      <Button size="sm" variant="outline" className="text-xs border-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800" onClick={() => router.push('/dashboard/historial')}>
+                        Ver todos ({proximosPaseos.length})
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <span className="text-4xl mb-2 block">📅</span>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">No hay paseos próximos</div>
+                  <Button size="sm" variant="outline" className="text-xs border-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800" onClick={() => {
+                    if (userProfile.mascotas?.[0]) {
+                      setSelectedMascota(userProfile.mascotas[0]);
+                      setOpenScheduleWalkDialog(true);
+                    } else {
+                      toast.error('Primero debes agregar una mascota');
+                    }
+                  }}>
                     Programar Paseo
                   </Button>
                 </div>
-              ))}
+              );
+            })()}
+          </div>
+
+          {/* Paseador Favorito */}
+          <div className="bg-gradient-to-r from-green-100 to-blue-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 shadow-xl glass-morphism animate-fade-in flex flex-col justify-between min-h-[220px] border border-blue-200/50 dark:border-gray-600">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-green-500 dark:from-blue-600 dark:to-green-600 rounded-full mx-auto mb-3 flex items-center justify-center">
+                <span className="text-white text-2xl">👨‍🦲</span>
+              </div>
+              <h3 className="font-semibold text-gray-700 dark:text-gray-200 text-lg">Paseador Favorito</h3>
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl">🐾</div>
-              <h3 className="text-xl font-medium text-gray-800 mb-2">No tienes mascotas registradas</h3>
-              <p className="text-gray-600 mb-6">Agrega tu primera mascota para comenzar a programar paseos</p>
-              <Button 
-                onClick={() => setOpenAddPetDialog(true)}
-                className="bg-gradient-to-r from-blue-500 to-pink-500 text-white font-semibold px-6 py-3 rounded-xl hover:scale-105 transition-all duration-300"
-              >
-                <span className="mr-2">🐕</span>
-                Agregar Primera Mascota
-              </Button>
-            </div>
-          )}
+            
+            {(() => {
+              if (!misPaseos || misPaseos.length === 0) {
+                return (
+                  <div className="text-center py-4">
+                    <span className="text-4xl mb-2 block">🤝</span>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">Aún no tienes un paseador favorito.</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500 mb-3">¡Programa tu primer paseo!</div>
+                    <Button size="sm" variant="outline" className="text-xs border-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800" onClick={() => {
+                      if (userProfile.mascotas?.[0]) {
+                        setSelectedMascota(userProfile.mascotas[0]);
+                        setOpenScheduleWalkDialog(true);
+                      } else {
+                        toast.error('Primero debes agregar una mascota');
+                      }
+                    }}>
+                      Programar Paseo
+                    </Button>
+                  </div>
+                );
+              }
+
+              // Contar frecuencia de paseadores
+              const paseadorCount = misPaseos.reduce((acc, paseo) => {
+                if (paseo.paseador?.nombre) {
+                  acc[paseo.paseador.nombre] = (acc[paseo.paseador.nombre] || 0) + 1;
+                }
+                return acc;
+              }, {} as Record<string, number>);
+
+              const paseadorMasFrecuente = Object.entries(paseadorCount).reduce((max, [nombre, count]) => 
+                count > max.count ? { nombre, count } : max, { nombre: '', count: 0 });
+
+              if (paseadorMasFrecuente.count === 0) {
+                return (
+                  <div className="text-center py-4">
+                    <span className="text-4xl mb-2 block">🤝</span>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">Aún no tienes un paseador favorito.</div>
+                    <Button size="sm" variant="outline" className="text-xs border-gray-300 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800" onClick={() => {
+                      if (userProfile.mascotas?.[0]) {
+                        setSelectedMascota(userProfile.mascotas[0]);
+                        setOpenScheduleWalkDialog(true);
+                      } else {
+                        toast.error('Primero debes agregar una mascota');
+                      }
+                    }}>
+                      Programar Paseo
+                    </Button>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="text-center">
+                  <div className="font-semibold text-gray-800 dark:text-gray-200 text-lg mb-1">{paseadorMasFrecuente.nombre}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">{paseadorMasFrecuente.count} paseos realizados</div>
+                  <div className="flex justify-center mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-yellow-400 text-sm">⭐</span>
+                    ))}
+                  </div>
+                  <Button size="sm" className="bg-gradient-to-r from-blue-500 to-green-500 dark:from-blue-600 dark:to-green-600 text-white text-xs">
+                    Contactar
+                  </Button>
+                </div>
+              );
+            })()}
+          </div>
         </div>
-      </div>
 
-        {/* Nuevo diálogo premium */}
-        <Dialog open={openScheduleWalkDialog} onOpenChange={setOpenScheduleWalkDialog}>
-          <ScheduleWalkDialog form={scheduleWalkForm} onSubmit={onSubmitScheduleWalk} precioTotal={precioTotal} />
-        </Dialog>
+        {/* Widget de Actividad - Ancho completo */}
+        <div className="max-w-2xl mx-auto mb-10">
+          <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 shadow-xl glass-morphism animate-fade-in border border-purple-200/50 dark:border-gray-600">
+            <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-4 text-lg text-center">Resumen de Actividad</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{misPaseos?.length || 0}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Total Paseos</div>
+              </div>
+              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {misPaseos?.reduce((acc, p) => acc + (p.duracion || 0), 0) || 0}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Min. Caminados</div>
+              </div>
+              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {misPaseos && misPaseos.length ? Math.round(misPaseos.reduce((acc, p) => acc + (p.duracion || 0), 0) / misPaseos.length) : 0}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Promedio Min.</div>
+              </div>
+              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {userProfile.mascotas?.length || 0}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Mascotas</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      {/* Modals and Toaster */}
+      {/* Modales flotando fuera del contenedor principal */}
+      {openScheduleWalkDialog && (
+        isMobile ? (
+          <BottomSheetScheduleModal
+            isOpen={openScheduleWalkDialog}
+            onClose={() => setOpenScheduleWalkDialog(false)}
+            selectedMascota={selectedMascota}
+            form={scheduleWalkForm}
+            onSubmit={onSubmitScheduleWalk}
+            precioTotal={precioTotal}
+            TIPOS_PASEO={TIPOS_PASEO}
+            TIPOS_SERVICIO={TIPOS_SERVICIO}
+            isSubmitting={scheduleWalkForm.formState.isSubmitting}
+          />
+        ) : (
+          <PremiumScheduleModal
+            isOpen={openScheduleWalkDialog}
+            onClose={() => setOpenScheduleWalkDialog(false)}
+            selectedMascota={selectedMascota}
+            form={scheduleWalkForm}
+            onSubmit={onSubmitScheduleWalk}
+            precioTotal={precioTotal}
+            TIPOS_PASEO={TIPOS_PASEO}
+            TIPOS_SERVICIO={TIPOS_SERVICIO}
+            isSubmitting={scheduleWalkForm.formState.isSubmitting}
+          />
+        )
+      )}
+
       <ConfirmationModal 
         isOpen={showConfirmationModal}
         onClose={() => setShowConfirmationModal(false)}
@@ -710,6 +867,6 @@ export default function DashboardPage() {
       />
       
       <Toaster />
-    </div>
-  );
+    </>
+    );
 }

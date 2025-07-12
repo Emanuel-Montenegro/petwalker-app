@@ -1,18 +1,13 @@
 "use client";
 
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from 'lucide-react';
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { cn } from '@/lib/utils';
 import { UseFormReturn } from 'react-hook-form';
+import { PremiumCalendar } from './PremiumCalendar';
+import { createPortal } from 'react-dom';
 
 interface PremiumScheduleModalProps {
   isOpen: boolean;
@@ -37,190 +32,205 @@ const PremiumScheduleModal: React.FC<PremiumScheduleModalProps> = ({
   TIPOS_SERVICIO,
   isSubmitting
 }) => {
+  const [showCalendar, setShowCalendar] = useState(false);
+  const fechaBtnRef = useRef<HTMLButtonElement>(null);
+  const [calendarPos, setCalendarPos] = useState<{top: number, left: number, width: number}>({top: 0, left: 0, width: 0});
+
+  const handleShowCalendar = () => {
+    if (fechaBtnRef.current) {
+      const rect = fechaBtnRef.current.getBoundingClientRect();
+      setCalendarPos({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+    setShowCalendar((v) => !v);
+  };
+
+  if (!isOpen) return null;
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-white border-0 rounded-3xl shadow-2xl p-0">
-        {/* Premium Header */}
-        <div className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-6 rounded-t-3xl">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-              <span className="text-2xl">🚶‍♂️</span>
-            </div>
+    <>
+      {/* Modal centrado */}
+      <div className="fixed z-[10000] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm rounded-3xl shadow-2xl bg-white border-0 p-0 overflow-visible max-h-[70vh] overflow-y-auto">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-500 to-pink-500 px-5 py-4 rounded-t-3xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🚶‍♂️</span>
             <div>
-              <DialogTitle className="text-2xl font-bold text-white">
-                Programar Paseo
-              </DialogTitle>
-              <DialogDescription className="text-white/90">
-                Programa un paseo para {selectedMascota?.nombre}
-              </DialogDescription>
+              <h2 className="text-lg font-bold text-white">Programar Paseo</h2>
+              <p className="text-xs text-white/90">{selectedMascota?.nombre} • {selectedMascota?.especie}</p>
             </div>
           </div>
-          
-          {/* Pet Info Card */}
-          {selectedMascota && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                  <span className="text-xl">
-                    {selectedMascota.especie?.toLowerCase().includes('gato') ? '🐱' : '🐕'}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold">{selectedMascota.nombre}</h3>
-                  <p className="text-white/80 text-sm">{selectedMascota.especie} • {selectedMascota.edad} años</p>
-                </div>
-              </div>
-            </div>
-          )}
+          <button onClick={onClose} className="text-white/80 text-xl px-2">×</button>
         </div>
-
         {/* Form Content */}
-        <div className="p-6">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Fecha */}
-            <div className="space-y-2">
-              <Label htmlFor="fecha" className="text-gray-700 font-semibold">Fecha del Paseo</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal rounded-xl border-gray-300 hover:border-blue-500 transition-colors",
-                      !form.watch("fecha") && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {form.watch("fecha") ? (
-                      format(form.watch("fecha"), "PPP", { locale: es })
-                    ) : (
-                      <span>Selecciona una fecha</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-4 rounded-xl shadow-xl bg-white" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={form.watch("fecha")}
-                    onSelect={(date) => {
-                      if (date && date >= new Date(new Date().setHours(0,0,0,0))) {
-                        form.setValue("fecha", date);
-                      }
-                    }}
-                    disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                  />
-                </PopoverContent>
-              </Popover>
+        <div className="p-5 overflow-visible">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Fecha Field colapsable */}
+            <div className="group relative">
+              <Label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <span className="text-xl">📅</span>
+                <span>Fecha del Paseo</span>
+              </Label>
+              <button
+                type="button"
+                ref={fechaBtnRef}
+                className="w-full h-11 px-4 border border-gray-200 rounded-xl bg-gradient-to-r from-blue-50/50 to-purple-50/50 flex items-center justify-between text-gray-700 font-medium focus:ring-2 focus:ring-blue-400 transition-all"
+                onClick={handleShowCalendar}
+              >
+                {form.watch("fecha") ? new Date(form.watch("fecha")).toLocaleDateString('es-ES') : 'Seleccionar fecha'}
+                <span className="ml-2 text-lg">▼</span>
+              </button>
               {form.formState.errors.fecha && (
-                <p className="text-red-500 text-sm">
-                  {form.formState.errors.fecha.message}
+                <p className="text-red-500 text-sm mt-1">
+                  {(form.formState.errors.fecha as any).message}
                 </p>
               )}
             </div>
-
-            {/* Hora */}
-            <div className="space-y-2">
-              <Label htmlFor="hora" className="text-gray-700 font-semibold">Hora del Paseo</Label>
+            {/* Hora Field */}
+            <div className="group">
+              <Label htmlFor="hora" className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <span className="text-xl">🕐</span>
+                <span>Hora del Paseo</span>
+              </Label>
               <Input
                 id="hora"
                 type="time"
                 step="60"
                 {...form.register("hora")}
-                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                className="w-full h-11 px-4 border-gray-200 bg-gradient-to-r from-green-50/50 to-blue-50/50 hover:from-green-50 hover:to-blue-50 focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 rounded-xl"
               />
               {form.formState.errors.hora && (
-                <p className="text-red-500 text-sm">
-                  {form.formState.errors.hora.message}
+                <p className="text-red-500 text-sm mt-1">
+                  {(form.formState.errors.hora as any).message}
                 </p>
               )}
             </div>
-
-            {/* Tipo de Paseo */}
-            <div className="space-y-2">
-              <Label htmlFor="tipoPaseo" className="text-gray-700 font-semibold">Tipo de Paseo</Label>
+            {/* Tipo de Paseo Field */}
+            <div className="group">
+              <Label htmlFor="tipoPaseo" className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <span className="text-xl">🏃‍♂️</span>
+                <span>Tipo de Paseo</span>
+              </Label>
               <Select
                 onValueChange={(value) => form.setValue("tipoPaseo", value)}
                 defaultValue={form.getValues("tipoPaseo")}
               >
-                <SelectTrigger className="w-full rounded-xl border-gray-300 focus:border-blue-500">
+                <SelectTrigger className="w-full h-11 px-4 border-gray-200 bg-gradient-to-r from-purple-50/50 to-pink-50/50 hover:from-purple-50 hover:to-pink-50 focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200 rounded-xl">
                   <SelectValue placeholder="Selecciona el tipo de paseo" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(TIPOS_PASEO).map(([key, value]: [string, any]) => (
                     <SelectItem key={key} value={key}>
-                      {value.nombre} - {value.duracion} min (${value.precio})
+                      <div className="flex items-center justify-between w-full">
+                        <span>{value.nombre}</span>
+                        <span className="text-sm text-gray-500 ml-2">{value.duracion}min • ${value.precio}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Tipo de Servicio */}
-            <div className="space-y-2">
-              <Label htmlFor="tipoServicio" className="text-gray-700 font-semibold">Tipo de Servicio</Label>
+            {/* Tipo de Servicio Field */}
+            <div className="group">
+              <Label htmlFor="tipoServicio" className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <span className="text-xl">⭐</span>
+                <span>Tipo de Servicio</span>
+              </Label>
               <Select
                 onValueChange={(value) => form.setValue("tipoServicio", value)}
                 defaultValue={form.getValues("tipoServicio")}
               >
-                <SelectTrigger className="w-full rounded-xl border-gray-300 focus:border-blue-500">
+                <SelectTrigger className="w-full h-11 px-4 border-gray-200 bg-gradient-to-r from-yellow-50/50 to-orange-50/50 hover:from-yellow-50 hover:to-orange-50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-200 rounded-xl">
                   <SelectValue placeholder="Selecciona el tipo de servicio" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(TIPOS_SERVICIO).map(([key, value]: [string, any]) => (
                     <SelectItem key={key} value={key}>
-                      {value.nombre} - {value.descripcion}
+                      <div>
+                        <div className="font-medium">{value.nombre}</div>
+                        <div className="text-xs text-gray-500">{value.descripcion}</div>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Precio Total */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-4 border border-blue-200">
+            {/* Precio Total - Ultra Compact */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-3 border border-blue-200">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-bold text-gray-800">
-                    Precio Total: <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">${precioTotal.toFixed(2)}</span>
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Duración: {TIPOS_PASEO[form.getValues("tipoPaseo")]?.duracion || 0} minutos
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">💰</span>
+                  <div>
+                    <p className="text-sm text-gray-600">Total:</p>
+                    <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      ${precioTotal.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">Duración</p>
+                  <p className="text-lg font-semibold text-gray-700">
+                    {TIPOS_PASEO[form.getValues("tipoPaseo")]?.duracion || 0} min
                   </p>
                 </div>
-                <div className="text-3xl">💰</div>
               </div>
             </div>
-
-            {/* Buttons */}
-            <div className="flex gap-3 pt-4">
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-2">
               <Button 
                 type="button"
                 variant="outline" 
                 onClick={onClose}
-                className="flex-1 rounded-xl border-gray-300 hover:bg-gray-50"
+                className="flex-1 h-11 rounded-xl border-gray-300 hover:bg-gray-50 font-medium"
               >
                 Cancelar
               </Button>
               <Button 
                 type="submit" 
-                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:scale-105 transition-all duration-300 shadow-lg" 
+                className="flex-1 h-11 bg-gradient-to-r from-blue-500 to-pink-500 text-white font-medium rounded-xl hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200" 
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-                    Programando...
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    <span>Procesando...</span>
                   </span>
                 ) : (
-                  <>
-                    <span className="mr-2">🚶‍♂️</span>
-                    Programar Paseo
-                  </>
+                  <span className="flex items-center gap-2">
+                    <span>✨</span>
+                    <span>Agendar Paseo</span>
+                  </span>
                 )}
               </Button>
             </div>
           </form>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+      {/* Portal del calendario popover */}
+      {showCalendar && typeof window !== 'undefined' && createPortal(
+        <div
+          className="z-[12000] fixed"
+          style={{
+            top: calendarPos.top,
+            left: calendarPos.left,
+            width: calendarPos.width,
+          }}
+        >
+          <div className="bg-white rounded-xl shadow-xl p-3 border border-gray-100">
+            <PremiumCalendar
+              value={form.watch("fecha") ? form.watch("fecha").toISOString().split('T')[0] : ''}
+              onChange={(dateString) => {
+                form.setValue("fecha", new Date(dateString));
+                setShowCalendar(false);
+              }}
+            />
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
   );
 };
 

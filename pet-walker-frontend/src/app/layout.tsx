@@ -6,7 +6,7 @@ import { Toaster } from 'sonner';
 import MobileNavigation from '@/components/shared/MobileNavigation';
 import AuthInitializer from '@/components/shared/AuthInitializer';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
-import { usePathname } from 'next/navigation';
+import ThemeProvider from '@/components/shared/ThemeProvider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     site: '@petwalker',
     creator: '@petwalker',
     images: ['/og-image.png'],
-  },
+    },
   alternates: {
     canonical: 'https://petwalker.com',
     languages: {
@@ -65,6 +65,28 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="index, follow" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme-storage');
+                  if (theme) {
+                    var parsed = JSON.parse(theme);
+                    if (parsed.state && parsed.state.isDarkMode) {
+                      document.documentElement.classList.add('dark');
+                    }
+                  } else {
+                    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (prefersDark) {
+                      document.documentElement.classList.add('dark');
+                    }
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{
           "@context": "https://schema.org",
           "@type": "WebSite",
@@ -76,17 +98,18 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
-        style={{ backgroundColor: '#f9fafb', color: '#222', fontFamily: 'Inter, Arial, sans-serif' }}
       >
         <ErrorBoundary>
-          <QueryProvider>
-            <AuthInitializer />
-            <MobileNavigation />
-            <main role="main" tabIndex={-1} id="main-content">
+          <ThemeProvider>
+            <QueryProvider>
+              <AuthInitializer />
+              <MobileNavigation />
+              <main role="main" tabIndex={-1} id="main-content">
               {children}
-            </main>
-            <Toaster richColors closeButton position="top-right" />
-          </QueryProvider>
+              </main>
+              <Toaster richColors closeButton position="top-right" />
+            </QueryProvider>
+          </ThemeProvider>
         </ErrorBoundary>
       </body>
     </html>

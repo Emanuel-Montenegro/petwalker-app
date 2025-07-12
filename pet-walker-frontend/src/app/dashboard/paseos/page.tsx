@@ -25,6 +25,16 @@ import {
   DollarSignIcon,
   UserIcon
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/components/ui/use-toast';
+import { getPaseos, crearPaseo, actualizarPaseo, cancelarPaseo } from '@/lib/api/paseos';
+import { getPets } from '@/lib/api/pets';
+import { getUsuarios } from '@/lib/api/user';
+import { PremiumCalendar } from '@/components/shared/PremiumCalendar';
 
 export default function PaseosPage() {
   const { isAuthenticated, usuario } = useAuthStore();
@@ -38,6 +48,18 @@ export default function PaseosPage() {
   const [acceptingId, setAcceptingId] = useState<number | null>(null);
   const [startingId, setStartingId] = useState<number | null>(null);
   const [finishingId, setFinishingId] = useState<number | null>(null);
+  const [formData, setFormData] = useState({
+    mascotaId: '',
+    paseadorId: '',
+    fecha: '',
+    hora: '',
+    duracion: '',
+    precio: '',
+    notas: '',
+  });
+  const [paseoEditando, setPaseoEditando] = useState(false);
+  const [mascotas, setMascotas] = useState([]);
+  const [paseadores, setPaseadores] = useState([]);
 
   useEffect(() => {
     if (!isAuthenticated) {

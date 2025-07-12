@@ -1,14 +1,8 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { CheckCircledIcon } from "@radix-ui/react-icons"; // Ícono de celebración similar
+import { CheckCircleIcon } from 'lucide-react';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -17,30 +11,37 @@ interface ConfirmationModalProps {
   message: string;
 }
 
-export const ConfirmationModal = ({
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,
   onClose,
   title,
   message,
-}: ConfirmationModalProps) => {
+}) => {
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] p-6 text-center">
-        <DialogHeader className="flex flex-col items-center gap-4">
-          <CheckCircledIcon className="h-16 w-16 text-green-500" />
-          <DialogTitle className="text-2xl font-bold text-gray-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 rounded-full flex items-center justify-center">
+            <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
             {title}
-          </DialogTitle>
-          <DialogDescription className="text-gray-600 text-base">
-            {message}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="mt-6 flex justify-center">
-          <Button onClick={onClose} className="w-full max-w-xs bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold py-2 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
-            Cerrar
+          </h2>
+        </div>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          {message}
+        </p>
+        <div className="flex justify-end">
+          <Button 
+            onClick={onClose}
+            className="bg-gradient-to-r from-blue-500 to-green-500 dark:from-blue-600 dark:to-green-600 text-white px-6 py-2 rounded-xl hover:scale-105 transition-all duration-300"
+          >
+            Entendido
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }; 

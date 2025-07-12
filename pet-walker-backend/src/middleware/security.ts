@@ -6,11 +6,23 @@ import { AppError } from './errorHandler';
 
 // Configuración de CORS
 export const corsOptions: cors.CorsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: true, // Más permisivo en desarrollo
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Cookie',
+    'Set-Cookie',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Headers',
+    'Access-Control-Allow-Methods'
+  ],
   credentials: true,
-  maxAge: 86400 // 24 horas
+  maxAge: 86400, // 24 horas
+  exposedHeaders: ['Set-Cookie', 'Authorization']
 };
 
 // Configuración de rate limiting

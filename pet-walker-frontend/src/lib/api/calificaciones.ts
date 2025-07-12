@@ -1,6 +1,6 @@
 import { Calificacion, CalificacionFormData, PromedioCalificacion } from '../../types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {

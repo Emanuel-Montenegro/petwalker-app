@@ -1,6 +1,6 @@
 import { LoginData, RegisterData, AuthResponse } from "@/types"; // Definiremos estos tipos pronto
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000/api"; // Usar variable de entorno o default
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/api"; // Usar variable de entorno o default
 
 async function handleResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get("content-type");

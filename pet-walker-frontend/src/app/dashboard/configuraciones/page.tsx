@@ -53,40 +53,40 @@ export default function ConfigPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Configuraciones de la Cuenta</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Configuraciones de la Cuenta</h1>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="bg-white rounded-2xl border border-gray-200 p-6 space-y-5 shadow-md">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-5 shadow-md dark:shadow-gray-900/50">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-          <Input {...form.register('nombre')} className="h-10" />
-          {form.formState.errors.nombre && <p className="text-xs text-red-600">{form.formState.errors.nombre.message}</p>}
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
+          <Input {...form.register('nombre')} className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" />
+          {form.formState.errors.nombre && <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.nombre.message}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <Input type="email" {...form.register('email')} className="h-10" />
-          {form.formState.errors.email && <p className="text-xs text-red-600">{form.formState.errors.email.message}</p>}
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+          <Input type="email" {...form.register('email')} className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" />
+          {form.formState.errors.email && <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.email.message}</p>}
         </div>
 
-        <hr />
+        <hr className="border-gray-200 dark:border-gray-600" />
 
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña Actual</label>
-            <Input type="password" {...form.register('actual')} className="h-10" />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña Actual</label>
+            <Input type="password" {...form.register('actual')} className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nueva Contraseña</label>
-            <Input type="password" {...form.register('nueva')} className="h-10" />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nueva Contraseña</label>
+            <Input type="password" {...form.register('nueva')} className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña</label>
-            <Input type="password" {...form.register('confirmar')} className="h-10" />
-            {form.formState.errors.confirmar && <p className="text-xs text-red-600">{form.formState.errors.confirmar.message}</p>}
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmar Contraseña</label>
+            <Input type="password" {...form.register('confirmar')} className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" />
+            {form.formState.errors.confirmar && <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.confirmar.message}</p>}
           </div>
         </div>
 
-        <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white h-12 rounded-xl" disabled={profileMut.isPending || passMut.isPending}>Guardar Cambios</Button>
+        <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 text-white h-12 rounded-xl" disabled={profileMut.isPending || passMut.isPending}>Guardar Cambios</Button>
       </form>
     </div>
   );

@@ -128,7 +128,7 @@
     contain: layout style paint;
     transform: translateZ(0);
   }
-  
+
   /* Mejoras de accesibilidad y rendimiento */
   button, a {
     touch-action: manipulation;
@@ -153,7 +153,7 @@
     *[class*="animate-"] {
       animation-fill-mode: both;
       animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    }
+  }
   }
 }
 
@@ -169,13 +169,13 @@
   .animate-slide-in {
     animation: slide-in 0.7s cubic-bezier(0.4,0,0.2,1) both;
   }
-
+  
   /* Ocultar scrollbars pero mantener la funcionalidad */
   .scrollbar-hide {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;  /* Chrome, Safari and Opera */
   }
@@ -221,7 +221,7 @@
   /* Smooth scrolling global */
   html {
     scroll-behavior: smooth;
-  }
+    }
 
   /* Ultra-smooth Apple-style animations */
   @keyframes float {
@@ -229,7 +229,16 @@
     33% { transform: translate3d(0, -6px, 0) rotateX(2deg) rotateY(1deg); }
     66% { transform: translate3d(0, -6px, 0) rotateX(-2deg) rotateY(-1deg); }
   }
-  
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 8s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
   /* Smooth pulse for backgrounds */
   @keyframes pulse {
     0%, 100% { opacity: 0.6; transform: scale(1); }
@@ -242,7 +251,7 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
-    }
+  }
   }
   
   /* GPU acceleration classes */
@@ -270,7 +279,7 @@
     background: radial-gradient(circle at 20% 80%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 40% 40%, rgba(148, 163, 184, 0.1) 0%, transparent 50%);
-  }
+}
 
   /* Modal viewport centering - The Best Method */
   .modal-viewport-center {
@@ -283,7 +292,7 @@
     /* Ensure it works with any parent container */
     max-height: 90vh !important;
     max-width: 90vw !important;
-  }
+}
 
   /* Modal que siempre aparece en el viewport visible */
   .modal-viewport-follow {
@@ -294,7 +303,7 @@
     align-items: center !important;
     justify-content: center !important;
     padding: 1rem !important;
-  }
+}
 
   /* Contenido del modal optimizado para móvil */
   .modal-viewport-content {
@@ -306,7 +315,7 @@
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
-  }
+}
 
   /* Safe area para dispositivos con notch */
   @supports (padding: max(0px)) {
@@ -316,12 +325,12 @@
                max(1rem, env(safe-area-inset-bottom)) 
                max(1rem, env(safe-area-inset-left)) !important;
     }
-  }
+}
 
   /* Modal Animations */
   .modal-enter {
     animation: modalFadeIn 0.3s ease-out forwards;
-  }
+}
 
   .modal-exit {
     animation: modalFadeOut 0.3s ease-out forwards;
@@ -343,7 +352,7 @@
     to {
       opacity: 1;
       backdrop-filter: blur(8px);
-    }
+}
   }
 
   @keyframes modalFadeOut {
@@ -361,7 +370,7 @@
     from {
       opacity: 0;
       transform: scale(0.8) translateY(-20px);
-    }
+}
     to {
       opacity: 1;
       transform: scale(1) translateY(0);
@@ -372,10 +381,10 @@
     from {
       opacity: 1;
       transform: scale(1) translateY(0);
-    }
+  }
     to {
       opacity: 0;
       transform: scale(0.8) translateY(-20px);
-    }
   }
+}
 }

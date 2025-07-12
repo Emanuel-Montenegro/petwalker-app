@@ -13,6 +13,12 @@ export interface RequestConUsuario extends Request {
 }
 
 export async function verificarToken(req: RequestConUsuario, res: Response, next: NextFunction): Promise<void> {
+  // Permitir solicitudes OPTIONS para CORS
+  if (req.method === 'OPTIONS') {
+    next();
+    return;
+  }
+
   try {
     // Leer token desde cookie (preferido) o header Authorization (fallback)
     let token = req.cookies?.token;

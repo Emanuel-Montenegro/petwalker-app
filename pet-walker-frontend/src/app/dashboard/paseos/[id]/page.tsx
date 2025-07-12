@@ -38,7 +38,7 @@ export default function PaseoTrackingPage() {
 
   useEffect(() => {
     if (!id || !usuario) return;
-    const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000');
+    const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001');
     setSocket(s);
     s.emit('unirse-a-paseo', Number(id));
     return () => { s.disconnect(); };
@@ -46,7 +46,7 @@ export default function PaseoTrackingPage() {
 
   useEffect(() => {
     // Fetch del paseo actual para saber el paseador asignado
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/paseos/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/paseos/${id}`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -133,63 +133,103 @@ export default function PaseoTrackingPage() {
 
   const handleStartTracking = async (paseoId: number) => {
     if (!navigator.geolocation) {
-      toast.error('Tu navegador no soporta geolocalización. Usa Chrome, Firefox o Edge y habilita la ubicación.');
+      toast.error('Tu navegador no soporta geolocalización');
       return;
     }
+
     try {
       setStartingId(paseoId);
       await iniciarPaseo(paseoId);
       setTracking(true);
 
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          if (!latitude || !longitude || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
-            toast.error('Ubicación GPS inválida. Por favor, revisa los permisos de ubicación.');
-            return;
-          }
-          tryRegistrarPrimerPunto(paseoId, latitude, longitude);
-        },
-        (err) => {
-          console.error('[GPS] Error getCurrentPosition:', err);
-          if (err.code === 1) {
-            toast.error('Debes permitir el acceso a tu ubicación para usar el tracking en tiempo real. Haz clic en el ícono de ubicación en la barra de direcciones y selecciona "Permitir".');
-          } else if (err.code === 2) {
-            toast.error('No se pudo obtener tu ubicación. Verifica tu conexión o intenta de nuevo.');
-          } else if (err.code === 3) {
-            toast.error('La solicitud de ubicación tardó demasiado. Intenta de nuevo.');
-          } else {
-            toast.error('Error de geolocalización: ' + err.message);
-          }
-        },
-        { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
-      );
+      // Configuración optimizada de GPS
+      const gpsOptions = {
+        enableHighAccuracy: true,
+        maximumAge: 30000,        // Cache de 30s para ahorrar batería
+        timeout: 27000,           // Timeout de 27s
+        distanceFilter: 10,       // Mínimo 10 metros entre updates
+      };
 
+      // Función para validar y filtrar puntos GPS
+      const isValidLocation = (pos: GeolocationPosition): boolean => {
+        const { latitude, longitude, accuracy, speed, altitude } = pos.coords;
+        return (
+          Math.abs(latitude) <= 90 &&
+          Math.abs(longitude) <= 180 &&
+          accuracy <= 100 &&        // Precisión menor a 100m
+          (!speed || speed < 30)    // Velocidad razonable para un paseador
+        );
+      };
+
+      // Buffer para acumular puntos antes de enviar
+      let locationBuffer: GeolocationPosition[] = [];
+      const BUFFER_SIZE = 3;
+      const BUFFER_TIME = 10000; // 10s
+
+      const processAndSendLocations = async () => {
+        if (locationBuffer.length === 0) return;
+
+        // Promedio de puntos cercanos para reducir ruido
+        const avgPoint = locationBuffer.reduce((acc, curr) => ({
+          latitude: acc.latitude + curr.coords.latitude / locationBuffer.length,
+          longitude: acc.longitude + curr.coords.longitude / locationBuffer.length,
+          accuracy: curr.coords.accuracy,
+          speed: curr.coords.speed,
+          altitude: curr.coords.altitude,
+          timestamp: curr.timestamp
+        }), { latitude: 0, longitude: 0 } as any);
+
+        try {
+          await registrarPuntoGPS(paseoId, avgPoint.latitude, avgPoint.longitude);
+          if (socket) {
+            socket.emit('nueva-coordenada', {
+              paseoId,
+              lat: avgPoint.latitude,
+              lng: avgPoint.longitude,
+              precision: avgPoint.accuracy,
+              velocidad: avgPoint.speed,
+              altitud: avgPoint.altitude,
+              bateria: navigator.getBattery ? (await navigator.getBattery()).level * 100 : null
+            });
+          }
+          setCoords(prev => [...prev.slice(-50), { lat: avgPoint.latitude, lng: avgPoint.longitude }]); // Solo mantener últimos 50 puntos
+        } catch (err) {
+          console.error('Error al enviar ubicación:', err);
+        }
+        locationBuffer = [];
+      };
+
+      // Timer para procesar buffer por tiempo
+      const bufferTimer = setInterval(processAndSendLocations, BUFFER_TIME);
+
+      // Watch position con optimizaciones
       watchId.current = navigator.geolocation.watchPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
-          if (!latitude || !longitude || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
-            toast.error('Ubicación GPS inválida detectada durante el tracking.');
+          if (!isValidLocation(pos)) {
+            console.warn('Punto GPS inválido descartado');
             return;
           }
-          setCoords((prev) => [...prev, { lat: latitude, lng: longitude }]);
-          if (socket) socket.emit('nueva-coordenada', { paseoId, lat: latitude, lng: longitude });
-          registrarPuntoGPS(paseoId, latitude, longitude).catch(err => console.error('Error al registrar punto GPS:', err));
+          locationBuffer.push(pos);
+          if (locationBuffer.length >= BUFFER_SIZE) {
+            processAndSendLocations();
+          }
         },
         (err) => {
           console.error('[GPS] Error watchPosition:', err);
-          if (err.code === 1) {
-            toast.error('Debes permitir el acceso a tu ubicación para usar el tracking en tiempo real. Haz clic en el ícono de ubicación en la barra de direcciones y selecciona "Permitir".');
-          } else if (err.code === 2) {
-            toast.error('No se pudo obtener tu ubicación. Verifica tu conexión o intenta de nuevo.');
-          } else if (err.code === 3) {
-            toast.error('La solicitud de ubicación tardó demasiado. Intenta de nuevo.');
-          } else {
-            toast.error('Error de geolocalización: ' + err.message);
-          }
+          const errorMsg = {
+            1: 'Permiso de ubicación denegado',
+            2: 'Error de conexión GPS',
+            3: 'Timeout de ubicación'
+          }[err.code] || 'Error de geolocalización';
+          toast.error(errorMsg);
         },
-        { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+        gpsOptions
       );
+
+      return () => {
+        if (watchId.current) navigator.geolocation.clearWatch(watchId.current);
+        clearInterval(bufferTimer);
+      };
     } catch (error) {
       console.error('Error al iniciar paseo:', error);
       toast.error('No se pudo iniciar el paseo');
