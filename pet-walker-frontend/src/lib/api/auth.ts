@@ -5,12 +5,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:30
 async function handleResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get("content-type");
   const isJson = contentType && contentType.includes("application/json");
-
   const text = await response.text();
 
   if (!response.ok && !isJson) {
-    // Si la respuesta no es OK y no es JSON, intentamos usar el texto como mensaje de error
-    // o un mensaje por defecto si el texto está vacío
     throw new Error(text || "Ocurrió un error inesperado en el servidor.");
   }
 
@@ -19,7 +16,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
   }
 
   try {
-    return JSON.parse(text) as T;
+    const data = JSON.parse(text) as T;
+    // Si es una respuesta de autenticación, asegurarse de que tenga token
+    if (typeof data === 'object' && data !== null && 'token' in data && !data.token) {
+      const token = response.headers.get('Authorization')?.replace('Bearer ', '');
+      if (token) {
+        (data as any).token = token;
+      }
+    }
+    return data;
   } catch (error) {
     console.error("Error parsing JSON:", text);
     throw new Error("Error al procesar la respuesta del servidor");
@@ -42,7 +47,15 @@ export async function login(data: LoginData): Promise<AuthResponse> {
       throw new Error(errorData.message || 'Error al iniciar sesión');
     }
 
-    return handleResponse<AuthResponse>(response);
+    const authResponse = await handleResponse<AuthResponse>(response);
+    // Si no hay token en la respuesta, intentar obtenerlo del header
+    if (!authResponse.token) {
+      const token = response.headers.get('Authorization')?.replace('Bearer ', '');
+      if (token) {
+        authResponse.token = token;
+      }
+    }
+    return authResponse;
   } catch (error) {
     console.error('Error during login:', error);
     throw error;
@@ -65,7 +78,15 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
       throw new Error(errorData.message || 'Error al registrar usuario');
     }
 
-    return handleResponse<AuthResponse>(response);
+    const authResponse = await handleResponse<AuthResponse>(response);
+    // Si no hay token en la respuesta, intentar obtenerlo del header
+    if (!authResponse.token) {
+      const token = response.headers.get('Authorization')?.replace('Bearer ', '');
+      if (token) {
+        authResponse.token = token;
+      }
+    }
+    return authResponse;
   } catch (error) {
     console.error('Error during registration:', error);
     throw error;
@@ -83,5 +104,13 @@ export async function logout(): Promise<void> {
     // No lanzar error ya que el logout local siempre debe proceder
   }
 }
+
+export const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+};
 
 // Nota: Necesitamos definir los tipos LoginData, RegisterData y AuthResponse en src/types.ts 

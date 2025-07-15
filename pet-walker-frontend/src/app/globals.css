@@ -114,62 +114,68 @@
   --highlight: #FF6B35;
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-    /* Optimizaciones mobile-first */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    scroll-behavior: smooth;
-    /* Performance optimizations */
-    contain: layout style paint;
-    transform: translateZ(0);
-  }
-
-  /* Mejoras de accesibilidad y rendimiento */
-  button, a {
-    touch-action: manipulation;
-  }
-  
-  /* Ultra performance optimizations */
-  * {
-    -webkit-transform: translateZ(0);
-    -webkit-backface-visibility: hidden;
-    -webkit-perspective: 1000;
-    transform-style: preserve-3d;
-  }
-  
-  /* Optimize scroll performance */
-  html {
-    scroll-behavior: smooth;
-    overflow-x: hidden;
-  }
-  
-  /* Optimize animations for 60fps */
-  @media (prefers-reduced-motion: no-preference) {
-    *[class*="animate-"] {
-      animation-fill-mode: both;
-      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  }
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.75rem;
+  }
+ 
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Animaciones y utilidades */
 @layer utilities {
-  @keyframes slide-in {
-    0% { transform: translateY(40px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
-  }
-  .animate-slide-in {
-    animation: slide-in 0.7s cubic-bezier(0.4,0,0.2,1) both;
-  }
-  
   /* Ocultar scrollbars pero mantener la funcionalidad */
   .scrollbar-hide {
     -ms-overflow-style: none;  /* IE and Edge */
@@ -180,13 +186,16 @@
     display: none;  /* Chrome, Safari and Opera */
   }
 
-  /* Prevenir scroll horizontal y optimizaciones mobile */
-  .no-horizontal-scroll {
-    max-width: 100%;
-    overflow-x: hidden;
+  /* Animación de entrada suave */
+  @keyframes slide-in {
+    0% { transform: translateY(40px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  .animate-slide-in {
+    animation: slide-in 0.7s cubic-bezier(0.4,0,0.2,1) both;
   }
 
-  /* Animaciones optimizadas para rendimiento */
+  /* Animación de fade in */
   .animate-fade-in {
     animation: fadeIn 0.8s cubic-bezier(0.4,0,0.2,1);
     will-change: opacity, transform;
@@ -195,196 +204,18 @@
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  
-  /* Animaciones de scroll suaves */
-  .scroll-animate {
-    transition: all 0.8s cubic-bezier(0.4,0,0.2,1);
-  }
 
-  .scroll-animate.animate-fade-in {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-  }
-
-  /* Animación de escala suave */
-  @keyframes scaleX {
-    from { transform: scaleX(0); }
-    to { transform: scaleX(1); }
-  }
-
-  /* Optimización de toques en móviles */
-  .touch-optimized {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Smooth scrolling global */
-  html {
-    scroll-behavior: smooth;
-    }
-
-  /* Ultra-smooth Apple-style animations */
-  @keyframes float {
-    0%, 100% { transform: translate3d(0, 0px, 0) rotateX(0deg) rotateY(0deg); }
-    33% { transform: translate3d(0, -6px, 0) rotateX(2deg) rotateY(1deg); }
-    66% { transform: translate3d(0, -6px, 0) rotateX(-2deg) rotateY(-1deg); }
-  }
-
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-float-delayed {
-    animation: float 8s ease-in-out infinite;
-    animation-delay: 2s;
-  }
-
-  /* Smooth pulse for backgrounds */
-  @keyframes pulse {
-    0%, 100% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.05); }
-  }
-  
-  /* Reduced motion for accessibility */
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-  }
-  }
-  
-  /* GPU acceleration classes */
-  .gpu-accelerated {
-    will-change: transform;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-  }
-
-  /* 3D perspective utilities */
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-
-  /* Glassmorphism enhanced */
+  /* Glassmorphism */
   .glass-morphism {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  /* Advanced gradients */
+  /* Gradientes */
   .gradient-mesh {
     background: radial-gradient(circle at 20% 80%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 40% 40%, rgba(148, 163, 184, 0.1) 0%, transparent 50%);
-}
-
-  /* Modal viewport centering - The Best Method */
-  .modal-viewport-center {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    margin: 0 !important;
-    z-index: 9999 !important;
-    /* Ensure it works with any parent container */
-    max-height: 90vh !important;
-    max-width: 90vw !important;
-}
-
-  /* Modal que siempre aparece en el viewport visible */
-  .modal-viewport-follow {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 9999 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 1rem !important;
-}
-
-  /* Contenido del modal optimizado para móvil */
-  .modal-viewport-content {
-    position: relative !important;
-    width: 100% !important;
-    max-width: min(400px, calc(100vw - 2rem)) !important;
-    max-height: calc(100vh - 2rem) !important;
-    max-height: calc(100dvh - 2rem) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
-}
-
-  /* Safe area para dispositivos con notch */
-  @supports (padding: max(0px)) {
-    .modal-viewport-follow {
-      padding: max(1rem, env(safe-area-inset-top)) 
-               max(1rem, env(safe-area-inset-right)) 
-               max(1rem, env(safe-area-inset-bottom)) 
-               max(1rem, env(safe-area-inset-left)) !important;
-    }
-}
-
-  /* Modal Animations */
-  .modal-enter {
-    animation: modalFadeIn 0.3s ease-out forwards;
-}
-
-  .modal-exit {
-    animation: modalFadeOut 0.3s ease-out forwards;
   }
-
-  .modal-content-enter {
-    animation: modalSlideIn 0.3s ease-out forwards;
-  }
-
-  .modal-content-exit {
-    animation: modalSlideOut 0.3s ease-out forwards;
-  }
-
-  @keyframes modalFadeIn {
-    from {
-      opacity: 0;
-      backdrop-filter: blur(0px);
-    }
-    to {
-      opacity: 1;
-      backdrop-filter: blur(8px);
-}
-  }
-
-  @keyframes modalFadeOut {
-    from {
-      opacity: 1;
-      backdrop-filter: blur(8px);
-    }
-    to {
-      opacity: 0;
-      backdrop-filter: blur(0px);
-    }
-  }
-
-  @keyframes modalSlideIn {
-    from {
-      opacity: 0;
-      transform: scale(0.8) translateY(-20px);
-}
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
-
-  @keyframes modalSlideOut {
-    from {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-  }
-    to {
-      opacity: 0;
-      transform: scale(0.8) translateY(-20px);
-  }
-}
 }

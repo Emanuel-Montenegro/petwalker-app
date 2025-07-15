@@ -24,7 +24,9 @@ export const corsOptions: cors.CorsOptions = {
   ],
   credentials: true,
   maxAge: 86400, // 24 horas
-  exposedHeaders: ['Set-Cookie', 'Authorization']
+  exposedHeaders: ['Set-Cookie', 'Authorization'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 // Configuración de rate limiting

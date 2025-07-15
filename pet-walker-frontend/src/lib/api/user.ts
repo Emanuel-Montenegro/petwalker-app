@@ -8,6 +8,15 @@ import { LoginData, AuthResponse, UserProfile, RegisterData, Mascota, Paseo, Log
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/api";
 
+// Función para obtener los headers de autenticación
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` }),
+  };
+};
+
 // Función para manejar respuestas HTTP
 const handleResponse = async <T>(response: Response): Promise<T> => {
   let data;
@@ -49,23 +58,38 @@ export const registerUser = async (userData: RegisterData): Promise<AuthResponse
 
 // Función para obtener el perfil del usuario actual
 export const fetchUserProfile = async (): Promise<UserProfile> => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const response = await fetch(`${API_BASE_URL}/usuarios/me`, {
+    headers: getAuthHeaders(),
     credentials: 'include',
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
   });
-  return handleResponse<UserProfile>(response);
+  const profile = await handleResponse<UserProfile>(response);
+
+  // Si el usuario es dueño y no se recibieron mascotas, intentar recuperarlas
+  if (profile.rol === 'DUENO' && (!profile.mascotas || profile.mascotas.length === 0)) {
+    try {
+      const petsResponse = await fetch(`${API_BASE_URL}/mascotas/me`, {
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+      if (petsResponse.ok) {
+        const petsData = await petsResponse.json();
+        if (Array.isArray(petsData.mascotas)) {
+          (profile as any).mascotas = petsData.mascotas;
+        }
+      }
+    } catch (e) {
+      console.warn('[fetchUserProfile] No se pudo obtener la lista de mascotas:', e);
+    }
+  }
+
+  return profile;
 };
 
 // NUEVO: Función para agregar una nueva mascota
 export const addPet = async (petData: Omit<Mascota, 'id'>): Promise<Mascota> => {
   const response = await fetch(`${API_BASE_URL}/mascotas`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(petData),
     credentials: 'include',
   });
@@ -105,9 +129,7 @@ export const scheduleWalk = async (walkData: {
 export const fetchAvailableWalks = async (): Promise<Paseo[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/paseos/disponibles`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
     const data = await handleResponse<Paseo[]>(response);
@@ -134,6 +156,7 @@ export const acceptWalk = async (walkId: number, paseadorId: number): Promise<Pa
 // NUEVO: Función para obtener estadísticas de seguridad (Solo para administradores)
 export const getSecurityStats = async (): Promise<any> => {
   const response = await fetch(`${API_BASE_URL}/seguridad/stats`, {
+    headers: getAuthHeaders(),
     credentials: 'include',
   });
   return handleResponse<any>(response);
@@ -142,6 +165,7 @@ export const getSecurityStats = async (): Promise<any> => {
 // NUEVO: Función para obtener los logs detallados de intentos de inicio de sesión
 export const fetchDetailedLoginAttempts = async (): Promise<LoginAttempt[]> => {
   const response = await fetch(`${API_BASE_URL}/seguridad/logs-login`, {
+    headers: getAuthHeaders(),
     credentials: 'include',
   });
   return handleResponse<LoginAttempt[]>(response);
@@ -150,6 +174,7 @@ export const fetchDetailedLoginAttempts = async (): Promise<LoginAttempt[]> => {
 // NUEVO: Función para obtener la lista detallada de tokens revocados
 export const fetchRevokedTokens = async (): Promise<RevokedToken[]> => {
   const response = await fetch(`${API_BASE_URL}/seguridad/revoked-tokens`, {
+    headers: getAuthHeaders(),
     credentials: 'include',
   });
   return handleResponse<RevokedToken[]>(response);
@@ -159,9 +184,7 @@ export const fetchRevokedTokens = async (): Promise<RevokedToken[]> => {
 export const updateUserProfile = async (data: { nombre: string; email: string }): Promise<UserProfile> => {
   const response = await fetch(`${API_BASE_URL}/usuarios/me`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     credentials: 'include',
     body: JSON.stringify(data),
   });
@@ -172,29 +195,17 @@ export const updateUserProfile = async (data: { nombre: string; email: string })
 export const changePassword = async (payload: { actual: string; nueva: string }): Promise<{ mensaje: string }> => {
   const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     credentials: 'include',
     body: JSON.stringify(payload),
   });
   return handleResponse<{ mensaje: string }>(response);
 };
 
-export const getAuthHeaders = () => {
-  const token = localStorage.getItem('auth_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-};
-
 // Obtener paseadores (administración)
 export const getAllPaseadores = async (): Promise<{ id: number; nombre: string; email: string }[]> => {
   const response = await fetch(`${API_BASE_URL}/usuarios?rol=PASEADOR`, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     credentials: 'include',
   });
   if (!response.ok) {

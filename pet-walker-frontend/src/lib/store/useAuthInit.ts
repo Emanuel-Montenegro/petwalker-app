@@ -5,19 +5,25 @@ import { fetchUserProfile } from '../api/user';
 export const useAuthInit = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
     const checkSession = async () => {
       try {
         const usuario = await fetchUserProfile();
-        setAuth({ usuario, token: '' });
+        // Mantener el token original al actualizar el usuario
+        setAuth({ usuario, token: token || '' });
       } catch (error) {
         setAuth(null);
       }
     };
-    checkSession();
+    
+    // Primero inicializar la autenticación desde localStorage
     initializeAuth();
-    // Solo se ejecuta una vez al montar
+    
+    // Luego verificar la sesión con el backend
+    checkSession();
+    
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }; 

@@ -1,6 +1,6 @@
 import { Paseo } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/api";
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
@@ -11,7 +11,7 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
 };
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('auth_token');
+  const token = localStorage.getItem('token');
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),
@@ -23,9 +23,7 @@ export const obtenerMisPaseos = async (): Promise<Paseo[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/paseos/mios/dueno`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
 
@@ -34,7 +32,7 @@ export const obtenerMisPaseos = async (): Promise<Paseo[]> => {
     }
 
     const result = await response.json();
-    return result.paseos;
+    return result.paseos || [];
   } catch (error) {
     console.error('Error al obtener paseos:', error);
     throw error;
@@ -50,7 +48,7 @@ export const obtenerMisPaseosComoPaseador = async (usuarioId: number): Promise<P
   });
   
   const result = await handleResponse<{ paseos: Paseo[] }>(response);
-  return result.paseos;
+  return result.paseos || [];
 };
 
 export const obtenerPaseosPaseador = async (paseadorId: number): Promise<Paseo[]> => {
@@ -65,7 +63,6 @@ export const obtenerPaseosPaseador = async (paseadorId: number): Promise<Paseo[]
       throw new Error('No tienes permiso para ver estos paseos (403)');
     }
     if (response.status === 404) {
-      // Si la ruta no existe, error grave de backend
       throw new Error('Ruta de paseador no encontrada (404)');
     }
     if (!response.ok) {
@@ -73,7 +70,6 @@ export const obtenerPaseosPaseador = async (paseadorId: number): Promise<Paseo[]
       throw new Error(error.mensaje || 'Error al obtener los paseos del paseador');
     }
     const data = await response.json();
-    // Si la respuesta es { paseos: [] } o similar, devolver el array vacío
     return data.paseos || [];
   } catch (error) {
     console.error('Error al obtener paseos del paseador:', error);
@@ -83,11 +79,10 @@ export const obtenerPaseosPaseador = async (paseadorId: number): Promise<Paseo[]
 
 export const fetchAvailableWalks = async (): Promise<Paseo[]> => {
   try {
-    const response = await fetch('/api/paseos/disponibles', {
+    const response = await fetch(`${API_BASE_URL}/paseos/disponibles`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -95,7 +90,7 @@ export const fetchAvailableWalks = async (): Promise<Paseo[]> => {
     }
 
     const data = await response.json();
-    return data;
+    return data.paseos || [];
   } catch (error) {
     console.error('Error al obtener paseos disponibles:', error);
     throw error;
@@ -104,11 +99,10 @@ export const fetchAvailableWalks = async (): Promise<Paseo[]> => {
 
 export const acceptWalk = async (walkId: number, paseadorId: number): Promise<void> => {
   try {
-    const response = await fetch(`/api/paseos/${walkId}/aceptar`, {
+    const response = await fetch(`${API_BASE_URL}/paseos/${walkId}/aceptar`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
+      credentials: 'include',
       body: JSON.stringify({ paseadorId }),
     });
 
@@ -133,7 +127,7 @@ export const iniciarPaseo = async (paseoId: number): Promise<void> => {
       throw new Error(error.mensaje || 'Error al iniciar el paseo');
     }
   } catch (error) {
-    console.error('Error al iniciar paseo:', error);
+    console.error('❌ Error al iniciar paseo:', error);
     throw error;
   }
 };

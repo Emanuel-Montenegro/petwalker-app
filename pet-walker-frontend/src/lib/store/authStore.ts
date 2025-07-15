@@ -55,9 +55,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Guardar en localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('usuario', JSON.stringify(auth.usuario));
-        localStorage.setItem('token', auth.token);
+        // Solo guardar el token si se proporciona uno nuevo
+        if (auth.token) {
+          localStorage.setItem('token', auth.token);
+        }
       }
-      set({ isAuthenticated: true, usuario: auth.usuario, token: auth.token, isInitialized: true });
+      set({ 
+        isAuthenticated: true, 
+        usuario: auth.usuario, 
+        // Mantener el token existente si no se proporciona uno nuevo
+        token: auth.token || get().token, 
+        isInitialized: true 
+      });
     } else {
       // Limpiar localStorage
       if (typeof window !== 'undefined') {

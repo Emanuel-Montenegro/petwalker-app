@@ -29,7 +29,7 @@ export async function fetchUserPets(): Promise<Mascota[]> {
 // Nueva función para crear una mascota
 export async function createPet(petData: any) {
   try {
-    console.log('Enviando datos al backend:', petData);
+
     const response = await fetch(`${API_URL}/mascotas`, {
       method: 'POST',
       headers: {

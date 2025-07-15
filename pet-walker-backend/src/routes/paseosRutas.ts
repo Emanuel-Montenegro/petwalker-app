@@ -8,7 +8,8 @@ import {
   obtenerMisPaseosComoPaseador,
   iniciarPaseo,
   finalizarPaseo,
-  getPaseoById
+  getPaseoById,
+  limpiarHistorialPaseos
 } from '../controladores/paseosControlador';
 import { verificarRol } from '../middlewares/rolMiddleware';
 import { Rol } from '@prisma/client';
@@ -56,5 +57,10 @@ router.get('/:id', verificarToken, asyncHandler(async (req: RequestConUsuario, r
 
   return getPaseoById(req, res);
 }));
+
+// Nueva ruta para limpiar historial
+router.delete('/historial/limpiar', verificarToken, verificarRol([Rol.DUENO, Rol.PASEADOR]), async (req, res) => {
+  await limpiarHistorialPaseos(req, res);
+});
 
 export default router;

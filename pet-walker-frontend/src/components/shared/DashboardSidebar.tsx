@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 import { useNotificationsStore } from '@/lib/store/notificationsStore';
-import ThemeToggle from './ThemeToggle';
+import { ThemeToggle } from './ThemeToggle';
 
 interface MenuItem {
   name: string;
@@ -38,48 +38,48 @@ const menuItems: MenuItem[] = [
     name: 'Dashboard',
     href: '/dashboard',
     icon: HomeIcon,
-    emoji: '🏠',
-  },
-  {
-    name: 'Historial',
-    href: '/dashboard/historial',
-    icon: ClipboardListIcon,
-    emoji: '📋',
-    roles: ['DUENO'], // Solo los dueños pueden calificar
+    emoji: '🏠'
   },
   {
     name: 'Calificaciones',
     href: '/dashboard/calificaciones',
     icon: StarIcon,
-    emoji: '⭐',
+    emoji: '⭐'
+  },
+  {
+    name: 'Historial',
+    href: '/dashboard/historial',
+    icon: HistoryIcon,
+    roles: ['DUENO'],
+    emoji: '📅'
   },
   {
     name: 'Mis Mascotas',
     href: '/dashboard/mascotas',
     icon: PawPrintIcon,
-    emoji: '🐾',
     roles: ['DUENO'],
+    emoji: '🐾'
   },
   {
     name: 'Paseos',
     href: '/dashboard/paseos',
-    icon: CalendarIcon,
-    emoji: '🚶‍♂️',
+    icon: MapIcon,
     roles: ['PASEADOR'],
+    emoji: '🗺️'
   },
   {
     name: 'Administración',
     href: '/dashboard/admin',
-    icon: SettingsIcon,
-    emoji: '⚙️',
+    icon: UsersIcon,
     roles: ['ADMIN'],
+    emoji: '👥'
   },
   {
-    name: 'Configuraciones',
+    name: 'Configuración',
     href: '/dashboard/configuraciones',
-    icon: CogIcon,
-    emoji: '⚙️',
-  },
+    icon: SettingsIcon,
+    emoji: '⚙️'
+  }
 ];
 
 const DashboardSidebar = memo(function DashboardSidebar() {
@@ -96,9 +96,9 @@ const DashboardSidebar = memo(function DashboardSidebar() {
   // Filtrar elementos del menú basado en el rol del usuario
   const filteredMenuItems = React.useMemo(() => {
     return menuItems.filter(item => {
-    if (!item.roles) return true; // Si no hay roles específicos, mostrar a todos
-    return usuario && item.roles.includes(usuario.rol);
-  });
+      if (!item.roles) return true; // Si no hay roles específicos, mostrar a todos
+      return usuario && item.roles.includes(usuario.rol);
+    });
   }, [usuario]);
 
   // Sidebar content

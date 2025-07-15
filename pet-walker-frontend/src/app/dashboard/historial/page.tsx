@@ -21,6 +21,8 @@ import { toast } from 'sonner';
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Pagination } from '@/components/ui/pagination';
 import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '@/lib/api/config';
+import { getAuthHeaders } from '@/lib/api/auth';
 
 const MapWithNoSSR = dynamic(() => import('@/components/shared/LiveMap'), { ssr: false });
 
@@ -47,6 +49,14 @@ const HistorialPaseosPage = () => {
   const [expandedPaseos, setExpandedPaseos] = useState<Set<number>>(new Set());
   const router = useRouter();
 
+  // Helper para ordenar paseos (fecha ↓ luego hora ↓)
+  const sortPaseos = (arr: Paseo[]) => arr.sort((a, b) => {
+    const d1 = new Date(a.fecha).getTime();
+    const d2 = new Date(b.fecha).getTime();
+    if (d2 !== d1) return d2 - d1;
+    return (b.horaInicio || '').localeCompare(a.horaInicio || '');
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       if (!usuario?.id) return;
@@ -63,9 +73,9 @@ const HistorialPaseosPage = () => {
         }
         const enCurso = paseosData.find((p: Paseo) => p.estado === 'EN_CURSO');
         setPaseoEnCurso(enCurso || null);
-        const paseosFinalizado = paseosData.filter(
+        const paseosFinalizado = sortPaseos(paseosData.filter(
           (paseo: Paseo) => paseo.estado === 'FINALIZADO'
-        );
+        ));
         setPaseos(paseosFinalizado);
       } catch (err) {
         console.error('Error al cargar datos:', err);
@@ -77,19 +87,46 @@ const HistorialPaseosPage = () => {
     fetchData();
   }, [usuario?.id]);
 
+  // Refrescar datos cada 30 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (usuario?.id) {
+        const fetchData = async () => {
+          try {
+            let paseosData: Paseo[] = [];
+            if (userProfile?.rol === 'DUENO') {
+              paseosData = await obtenerMisPaseos();
+            } else if (userProfile?.rol === 'PASEADOR') {
+              paseosData = await obtenerPaseosPaseador(usuario.id);
+            }
+            const paseosFinalizado = sortPaseos(paseosData.filter(
+              (paseo: Paseo) => paseo.estado === 'FINALIZADO'
+            ));
+            setPaseos(paseosFinalizado);
+          } catch (err) {
+            console.error('Error al actualizar datos:', err);
+          }
+        };
+        fetchData();
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [usuario?.id, userProfile?.rol]);
+
   const handleCalificacionRegistrada = () => {
     if (usuario?.id && userProfile?.rol === 'DUENO') {
       obtenerMisPaseos().then((paseosData: Paseo[]) => {
-        const paseosFinalizado = paseosData.filter(
+        const paseosFinalizado = sortPaseos(paseosData.filter(
           (paseo: Paseo) => paseo.estado === 'FINALIZADO'
-        );
+        ));
         setPaseos(paseosFinalizado);
       });
     } else if (usuario?.id && userProfile?.rol === 'PASEADOR') {
       obtenerPaseosPaseador(usuario.id).then((paseosData: Paseo[]) => {
-        const paseosFinalizado = paseosData.filter(
+        const paseosFinalizado = sortPaseos(paseosData.filter(
           (paseo: Paseo) => paseo.estado === 'FINALIZADO'
-        );
+        ));
         setPaseos(paseosFinalizado);
       });
     }
@@ -106,13 +143,51 @@ const HistorialPaseosPage = () => {
 
   const handleViewRoute = async (paseoId: number) => {
     try {
+      console.log('Obteniendo puntos GPS para paseo:', paseoId);
       const data = await obtenerPuntosGPS(paseoId);
-      setRouteCoords(data.coordenadas.map((c: [number, number]) => ({ lat: c[1], lng: c[0] })));
+      console.log('Respuesta de obtenerPuntosGPS:', data);
+      if (!data.coordenadas || data.coordenadas.length === 0) {
+        console.log('No hay coordenadas, mostrando toast');
+        toast.error('Este paseo no tiene ruta registrada');
+        return;
+      }
+      // Las coordenadas vienen como [lng, lat], las convertimos a {lat, lng}
+      setRouteCoords(data.coordenadas.map(([lng, lat]: [number, number]) => ({ lat, lng })));
       setSelectedPaseoId(paseoId);
       setShowRouteModal(true);
     } catch (error) {
       console.error('Error al obtener ruta:', error);
       toast.error('No se pudo cargar la ruta del paseo');
+    }
+  };
+
+  const limpiarHistorial = async () => {
+    try {
+      console.log('Intentando limpiar historial en:', `${API_BASE_URL}/paseos/historial/limpiar`);
+      
+      const response = await fetch(`${API_BASE_URL}/paseos/historial/limpiar`, {
+        method: 'DELETE',
+        headers: {
+          ...getAuthHeaders(),
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ mensaje: 'Error al limpiar historial' }));
+        throw new Error(errorData.mensaje || 'Error al limpiar historial');
+      }
+
+      const data = await response.json();
+      toast.success(data.mensaje || 'Historial limpiado exitosamente');
+      
+      // Actualizar el estado local en lugar de recargar la página
+      setPaseos([]);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error('Error al limpiar historial:', error);
+      toast.error(error instanceof Error ? error.message : 'No se pudo limpiar el historial');
     }
   };
 
@@ -159,7 +234,7 @@ const HistorialPaseosPage = () => {
   return (
     <ErrorBoundary>
       <div className="w-full max-w-3xl mx-auto py-6 px-2 pr-6 sm:px-4 sm:pr-12 space-y-8 min-h-screen overflow-x-hidden max-w-[98vw]">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 mb-8 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 rounded-2xl flex items-center justify-center">
@@ -170,9 +245,20 @@ const HistorialPaseosPage = () => {
                 <p className="text-gray-600 dark:text-gray-400">Revisa todos tus paseos completados</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-green-600 dark:text-green-400 text-sm font-semibold">{paseos.length} paseos completados</span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-green-600 dark:text-green-400 text-sm font-semibold">{paseos.length} paseos completados</span>
+              </div>
+              {paseos.length > 0 && (
+                <Button
+                  onClick={limpiarHistorial}
+                  variant="destructive"
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                >
+                  Limpiar Historial
+                </Button>
+              )}
             </div>
           </div>
         </div>

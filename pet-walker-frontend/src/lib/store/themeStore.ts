@@ -1,41 +1,26 @@
 'use client';
 
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
-interface ThemeState {
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
-  setDarkMode: (isDark: boolean) => void;
+type Theme = 'light' | 'dark'
+
+interface ThemeStore {
+  theme: Theme
+  setTheme: (theme: Theme) => void
+  toggleTheme: () => void
 }
 
-const applyTheme = (isDark: boolean) => {
-  if (typeof window !== 'undefined') {
-    const html = document.documentElement;
-    if (isDark) {
-      html.classList.add('dark');
-    } else {
-      html.classList.remove('dark');
-    }
-  }
-};
-
-export const useThemeStore = create<ThemeState>()(
+export const useThemeStore = create<ThemeStore>()(
   persist(
-    (set, get) => ({
-      isDarkMode: false,
-      toggleDarkMode: () => {
-        const newMode = !get().isDarkMode;
-        set({ isDarkMode: newMode });
-        applyTheme(newMode);
-      },
-      setDarkMode: (isDark: boolean) => {
-        set({ isDarkMode: isDark });
-        applyTheme(isDark);
-      },
+    (set) => ({
+      theme: 'light',
+      setTheme: (theme: Theme) => set({ theme }),
+      toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
     }),
     {
       name: 'theme-storage',
+      skipHydration: true,
     }
   )
-); 
+) 

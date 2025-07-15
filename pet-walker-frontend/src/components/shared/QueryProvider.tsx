@@ -2,7 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Opcional: herramientas de desarrollo
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/lib/store/authStore';
 
 interface QueryProviderProps {
   children: React.ReactNode;
@@ -17,6 +18,14 @@ export default function QueryProvider({ children }: QueryProviderProps) {
       },
     },
   }));
+
+  // Limpiar caché al cerrar sesión para evitar fugas de datos entre cuentas
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      queryClient.clear();
+    }
+  }, [isAuthenticated, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

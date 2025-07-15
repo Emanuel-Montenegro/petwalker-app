@@ -17,6 +17,7 @@ import { scheduleWalk } from '@/lib/api/user';
 import { useForm } from 'react-hook-form';
 import { format } from 'date-fns';
 import { createPortal } from 'react-dom';
+import { ScheduleWalkModal } from '@/components/shared/ScheduleWalkModal';
 
 // Constantes de tipos de paseo y servicio (las mismas del dashboard)
 const TIPOS_PASEO = {
@@ -214,173 +215,6 @@ const EditPetModal = ({ isOpen, onClose, pet, onSave }: { isOpen: boolean; onClo
             </Button>
             <Button type="submit" className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white">
               Guardar
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Modal de Agendar Paseo Completo (como el del dashboard)
-const ScheduleWalkModal = ({ isOpen, onClose, pet, onSave }: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  pet: any; 
-  onSave: (data: any) => void;
-}) => {
-  const [walkData, setWalkData] = useState({
-    fecha: '',
-    hora: '',
-    tipoPaseo: 'NORMAL' as keyof typeof TIPOS_PASEO,
-    tipoServicio: 'GRUPAL' as keyof typeof TIPOS_SERVICIO
-  });
-
-  const [precioTotal, setPrecioTotal] = useState(0);
-
-  // Calcular precio total cuando cambian los valores
-  useEffect(() => {
-    if (walkData.tipoPaseo && walkData.tipoServicio) {
-      const precioBase = TIPOS_PASEO[walkData.tipoPaseo].precio;
-      const multiplier = TIPOS_SERVICIO[walkData.tipoServicio].precioMultiplier;
-      setPrecioTotal(precioBase * multiplier);
-    }
-  }, [walkData.tipoPaseo, walkData.tipoServicio]);
-
-  if (!isOpen || !pet) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!walkData.fecha || !walkData.hora) {
-      toast.error('Por favor completa todos los campos');
-      return;
-    }
-    
-    const walkDataToSend = {
-      ...walkData,
-      mascotaId: pet.id,
-      precio: precioTotal,
-      duracion: TIPOS_PASEO[walkData.tipoPaseo].duracion
-    };
-    
-    onSave(walkDataToSend);
-  };
-
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={onClose}></div>
-      <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 transform transition-all max-h-[90vh] overflow-y-auto">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-            🚶‍♂️
-          </div>
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Agendar Paseo</h2>
-          <p className="text-gray-600 dark:text-gray-400">Para {pet.nombre}</p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="fecha">Fecha</Label>
-            <Input
-              id="fecha"
-              type="date"
-              value={walkData.fecha}
-              onChange={(e) => setWalkData({...walkData, fecha: e.target.value})}
-              className="mt-1"
-              min={new Date().toISOString().split('T')[0]}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="hora">Hora</Label>
-            <Input
-              id="hora"
-              type="time"
-              value={walkData.hora}
-              onChange={(e) => setWalkData({...walkData, hora: e.target.value})}
-              className="mt-1"
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="tipoPaseo" className="flex items-center gap-2">
-              <span>🏃‍♂️</span>
-              Tipo de Paseo
-            </Label>
-            <Select 
-              value={walkData.tipoPaseo}
-              onValueChange={(value: keyof typeof TIPOS_PASEO) => setWalkData({...walkData, tipoPaseo: value})}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Selecciona el tipo de paseo" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(TIPOS_PASEO).map(([key, value]) => (
-                  <SelectItem key={key} value={key}>
-                    <div className="flex items-center justify-between w-full">
-                      <span>{value.nombre}</span>
-                      <span className="text-sm text-gray-500 ml-2">{value.duracion}min • ${value.precio}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label htmlFor="tipoServicio" className="flex items-center gap-2">
-              <span>⭐</span>
-              Tipo de Servicio
-            </Label>
-            <Select 
-              value={walkData.tipoServicio}
-              onValueChange={(value: keyof typeof TIPOS_SERVICIO) => setWalkData({...walkData, tipoServicio: value})}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Selecciona el tipo de servicio" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(TIPOS_SERVICIO).map(([key, value]) => (
-                  <SelectItem key={key} value={key}>
-                    <div>
-                      <div className="font-medium">{value.nombre}</div>
-                      <div className="text-xs text-gray-500">{value.descripcion}</div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Precio Total */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">💰</span>
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total:</p>
-                  <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    ${precioTotal.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Duración</p>
-                <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                  {TIPOS_PASEO[walkData.tipoPaseo]?.duracion || 0} min
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Cancelar
-            </Button>
-            <Button type="submit" className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-              Agendar Paseo
             </Button>
           </div>
         </form>
@@ -1035,7 +869,11 @@ export default function MascotasPage() {
       {/* Modales */}
       <PetDetailsModal isOpen={showDetailsModal} onClose={() => setShowDetailsModal(false)} pet={selectedPet} />
       <EditPetModal isOpen={showEditModal} onClose={() => setShowEditModal(false)} pet={selectedPet} onSave={handleSavePet} />
-      <ScheduleWalkModal isOpen={showScheduleModal} onClose={() => setShowScheduleModal(false)} pet={selectedPet} onSave={handleSaveWalk} />
+      <ScheduleWalkModal 
+        isOpen={showScheduleModal} 
+        onClose={() => setShowScheduleModal(false)} 
+        mascota={selectedPet} 
+      />
       
               {/* Modal de Confirmación de Eliminación */}
         <DeleteConfirmModal

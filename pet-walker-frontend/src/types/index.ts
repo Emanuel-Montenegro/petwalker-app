@@ -64,6 +64,7 @@ export interface Paseo {
     nombre: string;
     email: string;
   };
+  calificacion?: Calificacion;
 }
 
 export interface MascotaFormData {

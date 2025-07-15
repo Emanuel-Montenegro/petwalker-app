@@ -34,6 +34,12 @@ const BottomSheetScheduleModal: React.FC<BottomSheetScheduleModalProps> = ({
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
 
+  const toLocalDate = (iso: string) => {
+    const [y,m,d] = iso.split('-').map(Number);
+    return new Date(y, m-1, d);
+  };
+  const formatDate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -94,9 +100,9 @@ const BottomSheetScheduleModal: React.FC<BottomSheetScheduleModalProps> = ({
                         className="mt-2"
                       >
                         <PremiumCalendar
-                          value={form.watch("fecha") ? form.watch("fecha").toISOString().split('T')[0] : ''}
+                          value={form.watch("fecha") ? formatDate(form.watch("fecha")) : ''}
                           onChange={(dateString) => {
-                            form.setValue("fecha", new Date(dateString));
+                            form.setValue("fecha", toLocalDate(dateString));
                             setShowCalendar(false);
                           }}
                         />

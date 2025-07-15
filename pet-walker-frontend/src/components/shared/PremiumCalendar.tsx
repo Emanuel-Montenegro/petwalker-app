@@ -9,7 +9,11 @@ interface PremiumCalendarProps {
 
 export function PremiumCalendar({ value, onChange }: PremiumCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const selectedDate = value ? new Date(value) : null;
+  const parseIsoLocal = (str: string) => {
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  };
+  const selectedDate = value ? parseIsoLocal(value) : null;
 
   const monthNames = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',

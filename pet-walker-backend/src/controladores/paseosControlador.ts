@@ -193,7 +193,7 @@ export const obtenerMisPaseosComoDueno = async (req: RequestConUsuario, res: Res
         },
         calificacion: true
       },
-      orderBy: { fecha: 'desc' }
+      orderBy: [{ fecha: 'desc' }, { horaInicio: 'desc' }]
     });
 
     res.json({ paseos });
@@ -231,7 +231,7 @@ export const obtenerMisPaseosComoPaseador = async (req: RequestConUsuario, res: 
         },
         calificacion: true
       },
-      orderBy: { fecha: 'desc' }
+      orderBy: [{ fecha: 'desc' }, { horaInicio: 'desc' }]
     });
 
     // Siempre responder 200 y array vacío si no hay paseos
@@ -255,7 +255,7 @@ export const iniciarPaseo = async (req: RequestConUsuario, res: Response) => {
 
     res.json({ mensaje: 'Paseo iniciado', paseo });
   } catch (error) {
-    console.error(error);
+    console.error('❌ Error al iniciar paseo:', error);
     res.status(500).json({ mensaje: 'Error al iniciar el paseo' });
   }
 };
@@ -268,10 +268,31 @@ export const finalizarPaseo = async (req: RequestConUsuario, res: Response) => {
       where: { id: parseInt(id) },
       data: {
         estado: 'FINALIZADO'
+      },
+      include: {
+        mascota: {
+          include: {
+            usuario: true
+          }
+        }
       }
     });
 
-    await generarFactura(paseo.id); //
+    // Generar factura
+    await generarFactura(paseo.id);
+
+    // Notificar al dueño
+    if (req.app && req.app.get('io')) {
+      const notificacion = await prisma.notification.create({
+        data: {
+          usuarioId: paseo.mascota.usuario.id,
+          mensaje: `Tu paseo con ${paseo.mascota.nombre} ha finalizado.`,
+          tipo: 'PASEO_FINALIZADO',
+          data: { paseoId: paseo.id }
+        }
+      });
+      emitirNotificacionUsuario(req.app.get('io'), paseo.mascota.usuario.id, notificacion);
+    }
 
     res.json({ mensaje: 'Paseo finalizado', paseo });
   } catch (error) {
@@ -347,5 +368,63 @@ export const getPaseoById = async (req: RequestConUsuario, res: Response) => {
   } catch (error) {
     console.error('Error al obtener paseo:', error);
     res.status(500).json({ mensaje: 'Error al obtener paseo' });
+  }
+};
+
+export const limpiarHistorialPaseos = async (req: RequestConUsuario, res: Response) => {
+  try {
+    const { id: usuarioId, rol } = req.usuario!;
+
+    // Obtener los IDs de los paseos a eliminar
+    let paseosAEliminar: { id: number }[] = [];
+    if (rol === 'DUENO') {
+      const mascotas = await prisma.mascota.findMany({
+        where: { usuarioId },
+        select: { id: true }
+      });
+      const mascotaIds = mascotas.map(m => m.id);
+      paseosAEliminar = await prisma.paseo.findMany({
+        where: {
+          mascotaId: { in: mascotaIds },
+          estado: 'FINALIZADO'
+        },
+        select: { id: true }
+      });
+    } else if (rol === 'PASEADOR') {
+      paseosAEliminar = await prisma.paseo.findMany({
+        where: {
+          paseadorId: usuarioId,
+          estado: 'FINALIZADO'
+        },
+        select: { id: true }
+      });
+    }
+
+    if (!paseosAEliminar?.length) {
+      return res.json({ mensaje: 'No hay paseos para eliminar' });
+    }
+
+    const paseoIds = paseosAEliminar.map(p => p.id);
+
+    // Eliminar registros relacionados
+    await prisma.$transaction([
+      prisma.puntoGPS.deleteMany({
+        where: { paseoId: { in: paseoIds } }
+      }),
+      prisma.calificacion.deleteMany({
+        where: { paseoId: { in: paseoIds } }
+      }),
+      prisma.factura.deleteMany({
+        where: { paseoId: { in: paseoIds } }
+      }),
+      prisma.paseo.deleteMany({
+        where: { id: { in: paseoIds } }
+      })
+    ]);
+
+    res.json({ mensaje: `Se eliminaron ${paseosAEliminar.length} paseos del historial` });
+  } catch (error) {
+    console.error('Error al limpiar historial:', error);
+    res.status(500).json({ mensaje: 'Error al limpiar el historial de paseos' });
   }
 };
