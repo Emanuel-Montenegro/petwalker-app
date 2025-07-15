@@ -47,6 +47,9 @@ const io = new Server(httpServer, {
 // Middleware de seguridad
 app.use(helmetConfig);
 app.use(cors(corsOptions));
+
+// Responder las solicitudes OPTIONS (preflight) globalmente
+app.options('*', cors(corsOptions));
 app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

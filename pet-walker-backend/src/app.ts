@@ -10,6 +10,9 @@ app.use(cors({
   credentials: true
 }));
 
+// Global OPTIONS handling
+app.options('*', cors({ origin: true, credentials: true }));
+
 app.use(express.json()); 
 
 app.use('/api', rutas);
