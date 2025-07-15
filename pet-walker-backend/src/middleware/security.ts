@@ -18,7 +18,9 @@ export const corsOptions: cors.CorsOptions = {
     'Set-Cookie',
     'Access-Control-Allow-Origin',
     'Access-Control-Allow-Headers',
-    'Access-Control-Allow-Methods'
+    'Access-Control-Allow-Methods',
+    'Cache-Control',
+    'cache-control'
   ],
   credentials: true,
   maxAge: 86400, // 24 horas

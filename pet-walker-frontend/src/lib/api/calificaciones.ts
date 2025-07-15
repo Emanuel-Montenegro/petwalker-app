@@ -11,7 +11,7 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
 };
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('auth_token');
+  const token = localStorage.getItem('token');
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),

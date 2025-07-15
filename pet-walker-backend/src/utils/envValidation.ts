@@ -8,7 +8,7 @@ const envSchema = z.object({
       const hexRegex = /^[0-9a-fA-F]+$/;
       return hexRegex.test(val) && val.length % 2 === 0;
     }, { message: 'JWT_SECRETO debe ser una cadena hexadecimal válida de longitud par.' }),
-  PORT: z.string().transform(Number).default('4000'),
+  PORT: z.string().transform(Number).default('3001'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   ADMIN_EMAIL: z.string().email(),
   ADMIN_PASSWORD: z.string().min(6),

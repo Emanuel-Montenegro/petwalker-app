@@ -9,12 +9,14 @@ import { useAuthStore } from '@/lib/store/authStore';
 import { iniciarPaseo, finalizarPaseo, obtenerMisPaseosComoPaseador } from '@/lib/api/paseos';
 import { registrarPuntoGPS, obtenerPuntosGPS } from '@/lib/api/gps';
 import type { Paseo } from '@/types';
+import { useQueryClient } from '@tanstack/react-query';
 
 const MapWithNoSSR = dynamic(() => import('@/components/shared/LiveMap'), { ssr: false });
 
 export default function PaseoTrackingPage() {
   const { id } = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { usuario } = useAuthStore();
   const [tracking, setTracking] = useState(false);
@@ -49,7 +51,7 @@ export default function PaseoTrackingPage() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/paseos/${id}`, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
       credentials: 'include'
     })
@@ -189,7 +191,8 @@ export default function PaseoTrackingPage() {
               precision: avgPoint.accuracy,
               velocidad: avgPoint.speed,
               altitud: avgPoint.altitude,
-              bateria: navigator.getBattery ? (await navigator.getBattery()).level * 100 : null
+              // @ts-ignore - getBattery no está tipado en TypeScript
+              bateria: (navigator as any).getBattery ? (await (navigator as any).getBattery()).level * 100 : null
             });
           }
           setCoords(prev => [...prev.slice(-50), { lat: avgPoint.latitude, lng: avgPoint.longitude }]); // Solo mantener últimos 50 puntos
@@ -246,6 +249,11 @@ export default function PaseoTrackingPage() {
     try {
       setFinishingId(paseoId);
       await finalizarPaseo(paseoId);
+      // Invalidar todas las cachés relacionadas
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['userPets'] });
+      queryClient.invalidateQueries({ queryKey: ['misPaseos'] });
+      queryClient.invalidateQueries({ queryKey: ['historialPaseos'] });
       toast.success('Paseo finalizado.');
       router.push('/dashboard/paseos');
     } catch (error) {
