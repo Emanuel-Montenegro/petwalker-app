@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -17,7 +17,7 @@ import { Select } from "@/components/ui/select";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Correo electrónico inválido." }),
-  contraseña: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
+  contrasena: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -25,17 +25,17 @@ type LoginFormData = z.infer<typeof loginSchema>;
 const registerSchema = z.object({
   nombre: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres." }),
   email: z.string().email({ message: "Correo electrónico inválido." }),
-  contraseña: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
+  contrasena: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
   confirmar: z.string().min(6, { message: "La confirmación debe tener al menos 6 caracteres." }),
   rol: z.enum(["DUENO", "PASEADOR"]),
-}).refine((data) => data.contraseña === data.confirmar, {
+}).refine((data) => data.contrasena === data.confirmar, {
   message: "Las contraseñas no coinciden.",
   path: ["confirmar"],
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-export default function LoginPage() {
+function LoginPageContent() {
   const searchParams = useSearchParams();
   const fromRegister = searchParams.get('from') === 'register';
   const [isLogin, setIsLogin] = useState(!fromRegister);
@@ -197,10 +197,10 @@ export default function LoginPage() {
                         id="password"
                         type="password"
                         placeholder="••••••••"
-                        {...registerLogin("contraseña")}
+                        {...registerLogin("contrasena")}
                         className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400"
                       />
-                      {loginErrors.contraseña && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{loginErrors.contraseña.message}</p>}
+                      {loginErrors.contrasena && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{loginErrors.contrasena.message}</p>}
                     </div>
               {error && (
                 <Alert variant="destructive" className="rounded-xl">
@@ -325,10 +325,10 @@ export default function LoginPage() {
                         id="register-password"
                         type="password"
                         placeholder="••••••••"
-                        {...registerRegister("contraseña")}
+                        {...registerRegister("contrasena")}
                         className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400"
                       />
-              {registerErrors.contraseña && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{registerErrors.contraseña.message}</p>}
+              {registerErrors.contrasena && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{registerErrors.contrasena.message}</p>}
             </div>
 
                     <div className="space-y-2">
@@ -382,4 +382,12 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-lg">Cargando...</div></div>}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}

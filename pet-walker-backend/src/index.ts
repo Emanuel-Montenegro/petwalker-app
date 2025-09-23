@@ -83,12 +83,14 @@ registrarSocketNotificaciones(io);
 // Iniciar servidor
 const PORT = 3001;
 httpServer.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`🚀 Servidor backend ejecutándose en http://localhost:${PORT}`);
+  console.log(`📡 WebSocket servidor listo`);
+  console.log(`🔗 CORS configurado para frontend en http://localhost:3000`);
 });
 
 // Manejo de errores no capturados
 process.on('unhandledRejection', (error: Error) => {
-  console.error('Error no manejado:', error);
+  console.error('❌ Error no manejado:', error);
   process.exit(1);
 });
 

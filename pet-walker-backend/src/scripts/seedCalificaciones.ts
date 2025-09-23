@@ -109,7 +109,7 @@ async function seedCalificaciones() {
     });
 
   } catch (error) {
-    console.error('❌ Error durante el seed:', error);
+    process.exit(1);
   } finally {
     await prisma.$disconnect();
   }
@@ -120,4 +120,4 @@ if (require.main === module) {
   seedCalificaciones();
 }
 
-export default seedCalificaciones; 
+export default seedCalificaciones;

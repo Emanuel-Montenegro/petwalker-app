@@ -19,7 +19,7 @@ export async function registrarUsuario(req: Request, res: Response): Promise<voi
       data: {
         nombre,
         email,
-        contraseña: hash,
+        contrasena: hash,
         rol
       }
     });
@@ -33,7 +33,7 @@ export async function registrarUsuario(req: Request, res: Response): Promise<voi
       }
     });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al crear el usuario' });
   }
 }
@@ -102,7 +102,7 @@ export async function resumenUsuario(req: Request, res: Response): Promise<void>
 
     res.status(400).json({ mensaje: 'Rol no válido para resumen' });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al obtener el resumen del usuario' });
   }
 }
@@ -143,7 +143,7 @@ export const obtenerPerfil = async (req: RequestConUsuario, res: Response): Prom
 
     res.json(usuario);
   } catch (error) {
-    console.error('Error al obtener perfil:', error);
+
     res.status(500).json({ message: 'Error al obtener perfil' });
   }
 };

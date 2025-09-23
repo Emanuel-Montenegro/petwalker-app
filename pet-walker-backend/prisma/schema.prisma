@@ -11,7 +11,7 @@ model Usuario {
   id                      Int              @id @default(autoincrement())
   nombre                  String
   email                   String           @unique
-  contraseña             String
+  contrasena              String
   rol                     Rol
   calificacionesRecibidas Calificacion[]
   certificados            Certificado[]

@@ -1,7 +1,9 @@
 "use client";
-import { useAuthInit } from '@/lib/store/useAuthInit';
+import { useAuthInit } from '../../lib/store/useAuthInit';
 
-export default function AuthInitializer() {
+const AuthInitializer = () => {
   useAuthInit();
   return null;
-} 
+};
+
+export default AuthInitializer;

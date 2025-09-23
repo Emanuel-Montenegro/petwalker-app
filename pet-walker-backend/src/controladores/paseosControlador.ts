@@ -6,14 +6,16 @@ import { generarFactura } from './facturasControlador';
 import { emitirNotificacionUsuario } from '../websockets/socketNotifications';
 import { Server } from 'socket.io';
 import { logger } from '../utils/logger';
+import { asyncHandler } from '../utils/asyncHandler';
 
-export const crearPaseo = async (req: RequestConUsuario, res: Response) => {
+export const crearPaseo = asyncHandler(async (req: RequestConUsuario, res: Response): Promise<void> => {
   const { mascotaId, fecha, origenLatitud, origenLongitud, horaInicio, hora, duracion, tipoServicio, precio } = req.body;
 
   // Soporte tolerante: aceptar 'horaInicio' o 'hora'
   const horaFinal = horaInicio || hora;
   if (!horaFinal || typeof horaFinal !== 'string' || !/^\d{2}:\d{2}$/.test(horaFinal)) {
-    return res.status(400).json({ mensaje: 'El campo horaInicio (o hora) es obligatorio y debe tener formato HH:mm' });
+    res.status(400).json({ mensaje: 'El campo horaInicio (o hora) es obligatorio y debe tener formato HH:mm' });
+    return;
   }
 
   try {
@@ -44,7 +46,8 @@ export const crearPaseo = async (req: RequestConUsuario, res: Response) => {
       const finExist = new Date(inicioExist.getTime() + paseo.duracion * 60000);
       // Si se solapan
       if (inicioNuevo < finExist && finNuevo > inicioExist) {
-        return res.status(409).json({ mensaje: 'La mascota ya tiene un paseo que se superpone en ese horario.' });
+        res.status(409).json({ mensaje: 'La mascota ya tiene un paseo que se superpone en ese horario.' });
+        return;
       }
     }
 
@@ -60,16 +63,16 @@ export const crearPaseo = async (req: RequestConUsuario, res: Response) => {
         precio,
       }
     });
-    logger.paseoDebug('Paseo creado', { paseoId: paseo.id, mascotaId });
+  
 
     res.status(201).json({ mensaje: 'Paseo creado', paseo });
   } catch (error) {
     logger.error('PASEO', 'Error al crear el paseo', error);
     res.status(500).json({ mensaje: 'Error al crear el paseo' });
   }
-};
+});
 
-export const listarPaseosPendientes = async (_req: Request, res: Response) => {
+export const obtenerPaseos = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   try {
     const paseos = await prisma.paseo.findMany({
       where: { 
@@ -96,17 +99,17 @@ export const listarPaseosPendientes = async (_req: Request, res: Response) => {
             usuarioId: true,
           }
         }
-      },
+      }
     });
 
     res.json(paseos);
   } catch (error) {
-    console.error(error);
+    logger.error('PASEO', 'Error al obtener paseos', error);
     res.status(500).json({ mensaje: 'Error al obtener paseos' });
   }
-};
+});
 
-export const aceptarPaseo = async (req: RequestConUsuario & { io?: Server }, res: Response) => {
+export const aceptarPaseo = async (req: RequestConUsuario & { io?: Server }, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
@@ -117,11 +120,13 @@ export const aceptarPaseo = async (req: RequestConUsuario & { io?: Server }, res
     });
 
     if (!paseoExistente) {
-      return res.status(404).json({ mensaje: 'Paseo no encontrado' });
+      res.status(404).json({ mensaje: 'Paseo no encontrado' });
+      return;
     }
 
     if (paseoExistente.estado !== 'PENDIENTE' || paseoExistente.paseadorId !== null) {
-      return res.status(400).json({ mensaje: 'Este paseo ya no está disponible' });
+      res.status(400).json({ mensaje: 'Este paseo ya no está disponible' });
+      return;
     }
 
     // Actualizamos el paseo con el nuevo paseador
@@ -156,12 +161,12 @@ export const aceptarPaseo = async (req: RequestConUsuario & { io?: Server }, res
 
     res.json({ mensaje: 'Paseo aceptado', paseo });
   } catch (error) {
-    console.error(error);
+    logger.error('PASEO', 'Error al aceptar el paseo', error);
     res.status(500).json({ mensaje: 'Error al aceptar el paseo' });
   }
 };
 
-export const obtenerMisPaseosComoDueno = async (req: RequestConUsuario, res: Response) => {
+export const obtenerMisPaseosComoDueno = async (req: RequestConUsuario, res: Response): Promise<void> => {
   const { estado, desde, hasta } = req.query;
 
   try {
@@ -198,12 +203,12 @@ export const obtenerMisPaseosComoDueno = async (req: RequestConUsuario, res: Res
 
     res.json({ paseos });
   } catch (error) {
-    console.error(error);
+    logger.error('PASEO', 'Error al obtener tus paseos', error);
     res.status(500).json({ mensaje: 'Error al obtener tus paseos' });
   }
 };
 
-export const obtenerMisPaseosComoPaseador = async (req: RequestConUsuario, res: Response) => {
+export const obtenerMisPaseosComoPaseador = async (req: RequestConUsuario, res: Response): Promise<void> => {
   const { estado, desde, hasta } = req.query;
 
   try {
@@ -235,14 +240,14 @@ export const obtenerMisPaseosComoPaseador = async (req: RequestConUsuario, res: 
     });
 
     // Siempre responder 200 y array vacío si no hay paseos
-    return res.status(200).json({ paseos });
+    res.status(200).json({ paseos });
   } catch (error) {
-    console.error(error);
+    logger.error('PASEO', 'Error al obtener tus paseos como paseador', error);
     res.status(500).json({ mensaje: 'Error al obtener tus paseos como paseador' });
   }
 };
 
-export const iniciarPaseo = async (req: RequestConUsuario, res: Response) => {
+export const iniciarPaseo = async (req: RequestConUsuario, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
@@ -255,15 +260,31 @@ export const iniciarPaseo = async (req: RequestConUsuario, res: Response) => {
 
     res.json({ mensaje: 'Paseo iniciado', paseo });
   } catch (error) {
-    console.error('❌ Error al iniciar paseo:', error);
+    logger.error('PASEO', 'Error al iniciar el paseo', error);
     res.status(500).json({ mensaje: 'Error al iniciar el paseo' });
   }
 };
 
-export const finalizarPaseo = async (req: RequestConUsuario, res: Response) => {
+export const finalizarPaseo = async (req: RequestConUsuario, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
+    // Verificar el estado actual del paseo antes de actualizarlo
+    const paseoActual = await prisma.paseo.findUnique({
+      where: { id: parseInt(id) },
+      select: { estado: true }
+    });
+
+    if (!paseoActual) {
+      res.status(404).json({ mensaje: 'Paseo no encontrado' });
+      return;
+    }
+
+    if (paseoActual.estado === 'FINALIZADO') {
+      res.status(400).json({ mensaje: 'El paseo ya está finalizado' });
+      return;
+    }
+
     const paseo = await prisma.paseo.update({
       where: { id: parseInt(id) },
       data: {
@@ -296,12 +317,12 @@ export const finalizarPaseo = async (req: RequestConUsuario, res: Response) => {
 
     res.json({ mensaje: 'Paseo finalizado', paseo });
   } catch (error) {
-    console.error(error);
+    logger.error('PASEO', 'Error al finalizar el paseo', error);
     res.status(500).json({ mensaje: 'Error al finalizar el paseo' });
   }
 };
 
-export const cancelarPaseo = async (req: RequestConUsuario, res: Response) => {
+export const cancelarPaseo = async (req: RequestConUsuario, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
@@ -310,20 +331,23 @@ export const cancelarPaseo = async (req: RequestConUsuario, res: Response) => {
     });
 
     if (!paseo) {
-      return res.status(404).json({ mensaje: 'Paseo no encontrado' });
+      res.status(404).json({ mensaje: 'Paseo no encontrado' });
+      return;
     }
 
     if (paseo.estado === 'EN_CURSO' || paseo.estado === 'FINALIZADO') {
-      return res.status(400).json({ mensaje: 'No se puede cancelar un paseo en curso o finalizado' });
+      res.status(400).json({ mensaje: 'No se puede cancelar un paseo en curso o finalizado' });
+      return;
     }
 
     const usuario = req.usuario!;
 
     const esDueño = usuario.rol === 'DUENO';
-    const esPaseador = usuario.rol === 'PASEADOR' && paseo.paseadorId === usuario.id;
+    const esPaseador = usuario.rol === 'PASEADOR' && paseo?.paseadorId === usuario.id;
 
     if (!esDueño && !esPaseador) {
-      return res.status(403).json({ mensaje: 'No tenés permisos para cancelar este paseo' });
+      res.status(403).json({ mensaje: 'No tenés permisos para cancelar este paseo' });
+      return;
     }
 
     await prisma.paseo.update({
@@ -335,15 +359,15 @@ export const cancelarPaseo = async (req: RequestConUsuario, res: Response) => {
       }
     });
 
-    return res.status(200).json({ mensaje: 'Paseo cancelado exitosamente' });
+    res.status(200).json({ mensaje: 'Paseo cancelado exitosamente' });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ mensaje: 'Error al cancelar el paseo' });
+    logger.error('PASEO', 'Error al cancelar el paseo', error);
+    res.status(500).json({ mensaje: 'Error al cancelar el paseo' });
   }
 };
 
 // Obtener un paseo por ID (migrado desde paseoControlador.ts)
-export const getPaseoById = async (req: RequestConUsuario, res: Response) => {
+export const obtenerPaseoPorId = asyncHandler(async (req: RequestConUsuario, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -356,22 +380,24 @@ export const getPaseoById = async (req: RequestConUsuario, res: Response) => {
     });
 
     if (!paseo) {
-      return res.status(404).json({ mensaje: 'Paseo no encontrado' });
+      res.status(404).json({ mensaje: 'Paseo no encontrado' });
+      return;
     }
 
     // Verificar permisos
     if (paseo.mascota.usuarioId !== req.usuario?.id && paseo.paseadorId !== req.usuario?.id) {
-      return res.status(403).json({ mensaje: 'No tienes permiso para ver este paseo' });
+      res.status(403).json({ mensaje: 'No tienes permiso para ver este paseo' });
+      return;
     }
 
     res.json(paseo);
   } catch (error) {
-    console.error('Error al obtener paseo:', error);
+    logger.error('PASEO', 'Error al obtener paseo', error);
     res.status(500).json({ mensaje: 'Error al obtener paseo' });
   }
-};
+});
 
-export const limpiarHistorialPaseos = async (req: RequestConUsuario, res: Response) => {
+export const limpiarHistorialPaseos = async (req: RequestConUsuario, res: Response): Promise<void> => {
   try {
     const { id: usuarioId, rol } = req.usuario!;
 
@@ -401,7 +427,8 @@ export const limpiarHistorialPaseos = async (req: RequestConUsuario, res: Respon
     }
 
     if (!paseosAEliminar?.length) {
-      return res.json({ mensaje: 'No hay paseos para eliminar' });
+      res.json({ mensaje: 'No hay paseos para eliminar' });
+      return;
     }
 
     const paseoIds = paseosAEliminar.map(p => p.id);
@@ -424,7 +451,7 @@ export const limpiarHistorialPaseos = async (req: RequestConUsuario, res: Respon
 
     res.json({ mensaje: `Se eliminaron ${paseosAEliminar.length} paseos del historial` });
   } catch (error) {
-    console.error('Error al limpiar historial:', error);
+    logger.error('PASEO', 'Error al limpiar el historial de paseos', error);
     res.status(500).json({ mensaje: 'Error al limpiar el historial de paseos' });
   }
 };

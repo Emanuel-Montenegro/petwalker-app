@@ -38,7 +38,7 @@ export const registrarMascota = async (req: RequestConUsuario, res: Response) =>
     });
     res.status(201).json({ mensaje: 'Mascota registrada', mascota });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al registrar la mascota' });
   }
 };
@@ -51,7 +51,7 @@ export const obtenerMisMascotas = async (req: RequestConUsuario, res: Response) 
 
     res.json({ mascotas });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al obtener las mascotas' });
   }
 };
@@ -101,7 +101,7 @@ export const editarMascota = async (req: RequestConUsuario, res: Response) => {
 
     res.json({ mensaje: 'Mascota actualizada correctamente' });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al editar la mascota' });
   }
 };
@@ -123,7 +123,7 @@ export const eliminarMascota = async (req: RequestConUsuario, res: Response) => 
 
     res.json({ mensaje: 'Mascota eliminada correctamente' });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al eliminar la mascota' });
   }
 };

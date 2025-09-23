@@ -94,7 +94,7 @@ export const registrarPuntoGPS = async (req: RequestConUsuario, res: Response) =
 
     res.status(201).json({ mensaje: 'Punto GPS registrado', punto });
   } catch (error) {
-    console.error('❌ Error en registrarPuntoGPS:', error);
+
     res.status(500).json({ mensaje: 'Error al registrar el punto GPS' });
   }
 };
@@ -187,7 +187,7 @@ export const obtenerPuntosGPS = async (req: RequestConUsuario, res: Response) =>
     });
 
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al obtener los puntos GPS' });
   }
 };

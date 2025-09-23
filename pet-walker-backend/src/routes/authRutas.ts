@@ -9,7 +9,7 @@ const router = Router();
 const loginSchema = z.object({
   body: z.object({
     email: z.string().email('Email inválido'),
-    contraseña: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres')
+    contrasena: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres')
   })
 });
 
@@ -18,7 +18,7 @@ const registerSchema = z.object({
   body: z.object({
     nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
     email: z.string().email('Email inválido'),
-    contraseña: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+    contrasena: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
     rol: z.enum(['DUENO', 'PASEADOR'])
   })
 });
@@ -28,4 +28,4 @@ router.post('/login', validate(loginSchema), login);
 router.post('/register', validate(registerSchema), register);
 router.post('/logout', logout);
 
-export default router; 
+export default router;

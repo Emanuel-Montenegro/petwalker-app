@@ -105,12 +105,14 @@ export async function logout(): Promise<void> {
   }
 }
 
+// Función para obtener los headers de autenticación
 export const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
+  console.log('🔑 Token desde localStorage:', token ? `${token.substring(0, 20)}...` : 'NO ENCONTRADO');
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
+    ...(token && { 'Authorization': `Bearer ${token}` }),
   };
 };
 
-// Nota: Necesitamos definir los tipos LoginData, RegisterData y AuthResponse en src/types.ts 
+// Nota: Necesitamos definir los tipos LoginData, RegisterData y AuthResponse en src/types.ts

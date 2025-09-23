@@ -17,9 +17,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <QueryProvider>
         <ThemeProvider>
           <ThemeInitializer />
-          <AuthInitializer />
-          <main>{children}</main>
-          <Toaster richColors closeButton position="top-right" />
+        <AuthInitializer />
+        <main>{children}</main>
+        <Toaster richColors closeButton position="top-right" />
         </ThemeProvider>
       </QueryProvider>
     </ErrorBoundary>

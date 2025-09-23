@@ -19,7 +19,7 @@ export const getSecurityStats = (req: RequestConUsuario, res: Response): void =>
       revokedTokens: tokenStats,
     });
   } catch (error) {
-    console.error('Error al obtener las estadísticas de seguridad:', error);
+
     res.status(500).json({ message: 'Error interno del servidor al obtener estadísticas de seguridad.' });
   }
 };
@@ -34,7 +34,7 @@ export const getDetailedLoginAttempts = (req: RequestConUsuario, res: Response):
     const detailedAttempts = authMonitor.getAllLoginAttempts();
     res.json(detailedAttempts);
   } catch (error) {
-    console.error('Error al obtener los logs detallados de inicio de sesión:', error);
+
     res.status(500).json({ message: 'Error interno del servidor al obtener los logs detallados.' });
   }
 };
@@ -49,7 +49,7 @@ export const getRevokedTokensList = (req: RequestConUsuario, res: Response): voi
     const revokedTokens = tokenManager.getAllRevokedTokens();
     res.json(revokedTokens);
   } catch (error) {
-    console.error('Error al obtener la lista de tokens revocados:', error);
+
     res.status(500).json({ message: 'Error interno del servidor al obtener la lista de tokens revocados.' });
   }
 };

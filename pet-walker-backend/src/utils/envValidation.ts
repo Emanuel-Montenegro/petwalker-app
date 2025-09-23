@@ -21,12 +21,7 @@ export const validateEnv = (): Env => {
   try {
     return envSchema.parse(process.env);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error('Error de validación de variables de entorno:', error.errors);
-      const missingVars = error.errors.map(err => err.path.join('.')).join(', ');
-      throw new Error(`Faltan o son inválidas las variables de entorno: ${missingVars}`);
-    }
-    throw error;
+    process.exit(1);
   }
 };
 
@@ -39,5 +34,5 @@ export const generateSecureJwtKey = (): string => {
 // Función para validar la fortaleza de una clave JWT existente
 export const isValidJwtKey = (key: string): boolean => {
   return envSchema.shape.JWT_SECRETO.safeParse(key).success;
-}; 
+};
 

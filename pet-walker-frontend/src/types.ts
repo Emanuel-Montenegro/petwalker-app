@@ -1,12 +1,12 @@
 export interface LoginData {
   email: string;
-  contraseña: string; // Coincide con el modelo de backend
+  contrasena: string; // Coincide con el modelo de backend
 }
 
 export interface RegisterData {
   nombre: string;
   email: string;
-  contraseña: string;
+  contrasena: string;
   // Podríamos añadir el rol aquí si el registro inicial permite elegir entre DUEÑO/PASEADOR
   // Por ahora, asumiremos que hay un registro por defecto o un paso posterior para definir el rol.
 }
@@ -120,4 +120,4 @@ export interface PromedioCalificacion {
   total: number;
 }
 
-// Puedes añadir otros tipos aquí a medida que los necesites para otras partes de la app 
+// Puedes añadir otros tipos aquí a medida que los necesites para otras partes de la app

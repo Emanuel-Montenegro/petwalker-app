@@ -1,12 +1,12 @@
 export interface LoginData {
   email: string;
-  contraseña: string;
+  contrasena: string;
 }
 
 export interface RegisterData {
   nombre: string;
   email: string;
-  contraseña: string;
+  contrasena: string;
   rol: 'DUENO' | 'PASEADOR';
 }
 
@@ -83,7 +83,7 @@ export interface MascotaFormData {
 
 export interface LoginAttempt {
   email: string;
-  contraseña: string;
+  contrasena: string;
 }
 
 export interface RevokedToken {

@@ -21,7 +21,6 @@ export const subirCertificado = async (req: RequestConUsuario, res: Response) =>
 
     res.status(201).json({ mensaje: 'Certificado subido', cert });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ mensaje: 'Error al subir certificado' });
   }
 };
@@ -50,7 +49,6 @@ export const actualizarEstadoCertificado = async (req: RequestConUsuario, res: R
 
     res.json({ mensaje: 'Estado actualizado', cert });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ mensaje: 'Error al actualizar estado' });
   }
 };

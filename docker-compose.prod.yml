@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: pet-walker-db
+    environment:
+      POSTGRES_DB: pet_walker
+      POSTGRES_USER: ${DB_USER:-pet_walker}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./pet-walker-backend/prisma/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - pet-walker-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-pet_walker}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  backend:
+    build:
+      context: ./pet-walker-backend
+      dockerfile: Dockerfile
+    container_name: pet-walker-backend
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-pet_walker}:${DB_PASSWORD:-secure_password}@postgres:5432/pet_walker
+      JWT_SECRETO: ${JWT_SECRET:-your-super-secret-jwt-key}
+      PORT: 3000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pet-walker-network
+    restart: unless-stopped
+    volumes:
+      - backend_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Next.js
+  frontend:
+    build:
+      context: ./pet-walker-frontend
+      dockerfile: Dockerfile
+    container_name: pet-walker-frontend
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_BACKEND_URL: ${BACKEND_URL:-http://localhost:3000/api}
+      NEXT_PUBLIC_SOCKET_URL: ${SOCKET_URL:-http://localhost:3000}
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - pet-walker-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: pet-walker-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - pet-walker-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_logs:
+    driver: local
+
+networks:
+  pet-walker-network:
+    driver: bridge

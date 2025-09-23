@@ -1,6 +1,6 @@
 "use client"
 
-import React, { memo, useState } from 'react';
+import React, { memo, useState, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -82,12 +82,23 @@ const menuItems: MenuItem[] = [
   }
 ];
 
+// Crear contexto para el estado del sidebar
+const SidebarContext = createContext<{
+  isCollapsed: boolean;
+  toggleSidebar: () => void;
+}>({ isCollapsed: false, toggleSidebar: () => {} });
+
+export const useSidebar = () => useContext(SidebarContext);
+
 const DashboardSidebar = memo(function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { usuario, logout } = useAuthStore();
   const { notifications, unreadCount, markAllAsRead } = useNotificationsStore();
   const [open, setOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false); // Nuevo estado
+
+  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
   const toggleNoti = () => {
     if (!open && unreadCount > 0) markAllAsRead();
@@ -96,9 +107,9 @@ const DashboardSidebar = memo(function DashboardSidebar() {
   // Filtrar elementos del menú basado en el rol del usuario
   const filteredMenuItems = React.useMemo(() => {
     return menuItems.filter(item => {
-      if (!item.roles) return true; // Si no hay roles específicos, mostrar a todos
-      return usuario && item.roles.includes(usuario.rol);
-    });
+    if (!item.roles) return true; // Si no hay roles específicos, mostrar a todos
+    return usuario && item.roles.includes(usuario.rol);
+  });
   }, [usuario]);
 
   // Sidebar content
@@ -157,7 +168,22 @@ const DashboardSidebar = memo(function DashboardSidebar() {
   );
 
   return (
-    <>
+    <SidebarContext.Provider value={{ isCollapsed, toggleSidebar }}>
+      {/* Toggle button para desktop */}
+      <button
+        className={`hidden sm:block fixed top-4 z-[70] bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg transition-all duration-300 ${
+          isCollapsed ? 'left-4' : 'left-[272px]'
+        }`}
+        onClick={toggleSidebar}
+        aria-label={isCollapsed ? "Mostrar sidebar" : "Ocultar sidebar"}
+      >
+        {isCollapsed ? (
+          <MenuIcon className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+        ) : (
+          <XIcon className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+        )}
+      </button>
+
       {/* Hamburger for mobile */}
       <button
         className="fixed top-4 left-4 z-[60] bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg sm:hidden"
@@ -166,10 +192,17 @@ const DashboardSidebar = memo(function DashboardSidebar() {
       >
         <MenuIcon className="w-6 h-6 text-gray-700 dark:text-gray-200" />
       </button>
+
       {/* Sidebar desktop */}
-      <aside className="hidden sm:block w-64 h-screen fixed left-0 top-0 bg-white dark:bg-gray-800 shadow-lg z-40 overflow-hidden" style={{ height: '100vh' }}>
+      <aside 
+        className={`hidden sm:block h-screen fixed left-0 top-0 bg-white dark:bg-gray-800 shadow-lg z-40 overflow-hidden transition-all duration-300 ${
+          isCollapsed ? 'w-0 -translate-x-full' : 'w-64 translate-x-0'
+        }`}
+        style={{ height: '100vh' }}
+      >
         {sidebarContent}
       </aside>
+
       {/* Sidebar mobile (slide-in) */}
       {open && (
         <>
@@ -186,8 +219,8 @@ const DashboardSidebar = memo(function DashboardSidebar() {
           </aside>
         </>
       )}
-    </>
+    </SidebarContext.Provider>
   );
 });
 
-export default DashboardSidebar; 
+export default DashboardSidebar;

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PremiumCalendar } from './PremiumCalendar';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format, addMinutes, isBefore, isAfter, startOfDay, endOfDay, addDays } from 'date-fns';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
@@ -109,6 +109,83 @@ const scheduleWalkSchema = z.object({
 
 type ScheduleWalkFormData = z.infer<typeof scheduleWalkSchema>;
 
+// Componente TimeSelector corregido
+const TimeSelector = ({ value, onChange, className = '' }: { value: string; onChange: (time: string) => void; className?: string }) => {
+  const [selectedHour, setSelectedHour] = useState(() => {
+    return value ? value.split(':')[0] : '09';
+  });
+  const [selectedMinute, setSelectedMinute] = useState(() => {
+    return value ? value.split(':')[1] : '00';
+  });
+
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  const minutes = ['00', '15', '30', '45'];
+
+  // Usar useCallback para evitar recrear la función en cada render
+  const handleTimeChange = useCallback(() => {
+    const timeString = `${selectedHour}:${selectedMinute}`;
+    if (timeString !== value) {
+      onChange(timeString);
+    }
+  }, [selectedHour, selectedMinute, onChange, value]);
+
+  // Ejecutar solo cuando cambian hora o minuto
+  useEffect(() => {
+    handleTimeChange();
+  }, [handleTimeChange]);
+
+  // Sincronizar con el valor externo cuando cambia
+  useEffect(() => {
+    if (value && value !== `${selectedHour}:${selectedMinute}`) {
+      const [hour, minute] = value.split(':');
+      setSelectedHour(hour);
+      setSelectedMinute(minute);
+    }
+  }, [value]);
+
+  return (
+    <div className={`flex gap-2 ${className}`}>
+      <div className="flex-1">
+        <Label className="text-xs text-gray-500 mb-1 block">Hora</Label>
+        <Select value={selectedHour} onValueChange={setSelectedHour}>
+          <SelectTrigger className="h-11 px-3 border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/30 dark:to-purple-900/30">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="max-h-60 z-[9999] scrollbar-hide" position="popper">
+            {hours.map((hour) => (
+              <SelectItem key={hour} value={hour}>
+                {hour}:00
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex-1">
+        <Label className="text-xs text-gray-500 mb-1 block">Minutos</Label>
+        <Select value={selectedMinute} onValueChange={setSelectedMinute}>
+          <SelectTrigger className="h-11 px-3 border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/30 dark:to-purple-900/30">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="z-[9999] scrollbar-hide" position="popper">
+            {minutes.map((minute) => (
+              <SelectItem key={minute} value={minute}>
+                :{minute}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex items-end">
+        <div className="h-11 px-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 rounded-xl border border-green-200 dark:border-green-800 flex items-center">
+          <span className="text-lg font-bold text-green-600 dark:text-green-400">
+            {selectedHour}:{selectedMinute}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface ScheduleWalkFormProps {
   mascota: any;
   onSuccess?: () => void;
@@ -126,11 +203,16 @@ export function ScheduleWalkForm({ mascota, onSuccess, onCancel, className = '' 
   const form = useForm<ScheduleWalkFormData>({
     resolver: zodResolver(scheduleWalkSchema),
     defaultValues: {
-      hora: '',
+      hora: '09:00',
       tipoPaseo: 'NORMAL',
       tipoServicio: 'GRUPAL',
     },
   });
+
+  // Función memoizada para actualizar la hora
+  const handleTimeChange = useCallback((time: string) => {
+    form.setValue("hora", time, { shouldValidate: true });
+  }, [form]);
 
   const toLocalDate = (iso: string) => {
     const [y,m,d] = iso.split('-').map(Number);
@@ -206,7 +288,7 @@ export function ScheduleWalkForm({ mascota, onSuccess, onCancel, className = '' 
           <span className="ml-2 text-lg">▼</span>
         </button>
         {showCalendar && (
-          <div className="absolute z-50 mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
+          <div className="absolute z-[9999] mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
             <PremiumCalendar
               value={form.watch("fecha") ? formatDate(form.watch("fecha")) : ''}
               onChange={(dateString) => {
@@ -221,16 +303,15 @@ export function ScheduleWalkForm({ mascota, onSuccess, onCancel, className = '' 
         )}
       </div>
 
-      {/* Hora Field */}
+      {/* Hora Field - Corregido */}
       <div>
         <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
           <span className="text-xl">⏰</span>
-          <span>Hora del Paseo</span>
+          <span>Hora del Paseo (24h)</span>
         </Label>
-        <Input
-          type="time"
-          {...form.register("hora")}
-          className="h-11 px-4 border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/30 dark:to-purple-900/30"
+        <TimeSelector
+          value={form.watch("hora") || '09:00'}
+          onChange={handleTimeChange}
         />
         {form.formState.errors.hora && (
           <p className="text-red-500 text-sm mt-1">{form.formState.errors.hora.message}</p>
@@ -250,7 +331,7 @@ export function ScheduleWalkForm({ mascota, onSuccess, onCancel, className = '' 
           <SelectTrigger className="h-11 px-4 border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/30 dark:to-purple-900/30">
             <SelectValue placeholder="Selecciona el tipo de paseo" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[9999]" position="popper">
             {Object.entries(TIPOS_PASEO).map(([key, value]) => (
               <SelectItem key={key} value={key}>
                 <div className="flex items-center justify-between w-full">
@@ -276,7 +357,7 @@ export function ScheduleWalkForm({ mascota, onSuccess, onCancel, className = '' 
           <SelectTrigger className="h-11 px-4 border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/30 dark:to-purple-900/30">
             <SelectValue placeholder="Selecciona el tipo de servicio" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[9999]" position="popper">
             {Object.entries(TIPOS_SERVICIO).map(([key, value]) => (
               <SelectItem key={key} value={key}>
                 <div className="flex items-center justify-between w-full">
@@ -342,4 +423,4 @@ export function ScheduleWalkForm({ mascota, onSuccess, onCancel, className = '' 
       </div>
     </form>
   );
-} 
+}

@@ -35,7 +35,7 @@ export const registrarCalificacion = async (req: RequestConUsuario, res: Respons
 
     res.status(201).json({ mensaje: 'Calificación registrada', calificacion });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al registrar la calificación' });
   }
 };
@@ -51,7 +51,7 @@ export const obtenerCalificacionesDePaseador = async (req: Request, res: Respons
 
     res.json({ calificaciones });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al obtener calificaciones' });
   }
 };
@@ -75,7 +75,7 @@ export const obtenerPromedioDePaseador = async (req: Request, res: Response) => 
 
     res.json({ paseadorId, promedio, total });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al calcular promedio' });
   }
 };

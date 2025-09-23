@@ -5,18 +5,44 @@ import { AppError } from './errorHandler';
 export const validate = (schema: AnyZodObject) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      console.log('🔍 Validando request:', {
+        method: req.method,
+        url: req.url,
+        body: req.body,
+        query: req.query,
+        params: req.params
+      });
+      
       await schema.parseAsync({
         body: req.body,
         query: req.query,
         params: req.params,
       });
+      
+      console.log('✅ Validación exitosa');
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const mensajes = error.errors.map(err => err.message);
-        next(new AppError(mensajes.join(', '), 400));
+        console.log('❌ Error de validación:', {
+          method: req.method,
+          url: req.url,
+          errors: error.errors,
+          receivedData: {
+            body: req.body,
+            query: req.query,
+            params: req.params
+          }
+        });
+        
+        const mensajes = error.errors.map(err => {
+          const path = err.path.join('.');
+          return `${path}: ${err.message}`;
+        });
+        
+        next(new AppError(`Errores de validación: ${mensajes.join(', ')}`, 400));
         return;
       }
+      console.log('❌ Error no esperado en validación:', error);
       next(error);
     }
   };
@@ -49,8 +75,9 @@ export const paseoSchema = {
   crear: z.object({
     body: z.object({
       mascotaId: z.number().int('El ID de la mascota debe ser un número entero'),
-      fecha: z.string().datetime('La fecha debe ser una fecha válida'),
+      fecha: z.string().min(1, 'La fecha es requerida'), // Acepta formato yyyy-MM-dd
       horaInicio: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de hora inválido'),
+      hora: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de hora inválido').optional(), // Para compatibilidad
       duracion: z.number().min(15, 'La duración mínima es 15 minutos'),
       tipoServicio: z.string().min(1, 'El tipo de servicio es requerido'),
       precio: z.number().min(0, 'El precio debe ser un número positivo'),
@@ -71,14 +98,14 @@ export const usuarioSchema = {
     body: z.object({
       nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
       email: z.string().email('Email inválido'),
-      contraseña: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+      contrasena: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
       rol: z.enum(['DUENO', 'PASEADOR'])
     })
   }),
   login: z.object({
     body: z.object({
       email: z.string().email('Email inválido'),
-      contraseña: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres')
+      contrasena: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres')
     })
   })
-}; 
+};

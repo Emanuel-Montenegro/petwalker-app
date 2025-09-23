@@ -27,7 +27,7 @@ class TokenManager {
         });
       }
     } catch (error) {
-      console.error('Error al revocar token:', error);
+  
     }
   }
 
@@ -82,6 +82,6 @@ class TokenManager {
 }
 
 // Exportar una instancia única
-export const tokenManager = new TokenManager(); 
+export const tokenManager = new TokenManager();
 
 

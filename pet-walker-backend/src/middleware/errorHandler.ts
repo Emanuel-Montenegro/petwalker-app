@@ -17,7 +17,12 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
-  console.error('Error:', err);
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  // Log error for debugging (only in development)
+  if (!isProduction) {
+    console.error('Error details:', err);
+  }
 
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
@@ -39,10 +44,16 @@ export const errorHandler = (
       });
       return;
     }
+    // Generic database error for production
+    res.status(500).json({
+      mensaje: isProduction ? 'Error de base de datos' : `Database error: ${err.code}`
+    });
+    return;
   }
 
+  // Generic server error
   res.status(500).json({
-    mensaje: 'Error interno del servidor'
+    mensaje: isProduction ? 'Error interno del servidor' : err.message
   });
 };
 
@@ -54,4 +65,4 @@ export const notFoundHandler = (
   res.status(404).json({
     mensaje: `Ruta no encontrada: ${req.method} ${req.originalUrl}`
   });
-}; 
+};

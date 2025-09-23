@@ -3,11 +3,17 @@ import { Paseo } from '@/types';
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/api";
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.mensaje || 'Error en la solicitud');
+  let data;
+  try {
+    data = await response.json();
+  } catch (e) {
+    throw new Error('Respuesta del servidor no es JSON válido.');
   }
-  return response.json();
+  if (!response.ok) {
+    console.error('Error en la respuesta:', data);
+    throw new Error(data.mensaje || data.error || `Error ${response.status}: ${response.statusText}`);
+  }
+  return data;
 };
 
 const getAuthHeaders = () => {
@@ -133,18 +139,54 @@ export const iniciarPaseo = async (paseoId: number): Promise<void> => {
 };
 
 export const finalizarPaseo = async (paseoId: number): Promise<void> => {
+  console.log('🔄 Iniciando finalización de paseo:', paseoId);
+  
   try {
     const response = await fetch(`${API_BASE_URL}/paseos/${paseoId}/finalizar`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       credentials: 'include',
     });
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.mensaje || 'Error al finalizar el paseo');
+      let errorMessage = 'Error al finalizar el paseo';
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.mensaje || errorData.error || errorMessage;
+      } catch (parseError) {
+        console.warn('⚠️ No se pudo parsear error del servidor:', parseError);
+        // Usar mensaje de error basado en status code
+        if (response.status === 404) {
+          errorMessage = 'Paseo no encontrado';
+        } else if (response.status === 403) {
+          errorMessage = 'No tienes permisos para finalizar este paseo';
+        } else if (response.status === 500) {
+          errorMessage = 'Error interno del servidor';
+        } else {
+          errorMessage = `Error ${response.status}: ${response.statusText}`;
+        }
+      }
+      
+      console.error('❌ Error HTTP al finalizar paseo:', {
+        status: response.status,
+        statusText: response.statusText,
+        message: errorMessage
+      });
+      
+      throw new Error(errorMessage);
     }
+    
+    console.log('✅ Paseo finalizado exitosamente:', paseoId);
+    
   } catch (error) {
-    console.error('Error al finalizar paseo:', error);
+    // Mejorar el manejo de errores de red
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error('❌ Error de conexión al finalizar paseo:', error);
+      throw new Error('Error de conexión. Verifica tu internet e intenta nuevamente.');
+    }
+    
+    console.error('❌ Error al finalizar paseo:', error);
     throw error;
   }
-}; 
+};

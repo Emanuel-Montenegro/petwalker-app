@@ -1,4 +1,12 @@
 {
+  "name": "petwalker-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd pet-walker-frontend && npm install && npm run build",
+    "start": "cd pet-walker-frontend && npm start",
+    "dev": "cd pet-walker-frontend && npm run dev"
+  },
   "dependencies": {
     "framer-motion": "^12.16.0"
   }

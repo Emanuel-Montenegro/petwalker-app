@@ -104,7 +104,7 @@ export function registrarSocketGPS(io: Server): void {
           })));
         }
       } catch (error) {
-        console.error('Error al unirse a paseo:', error);
+  
         socket.emit('error', { mensaje: 'Error al unirse al paseo' });
       }
     });
@@ -133,7 +133,7 @@ export function registrarSocketGPS(io: Server): void {
         ultimasActualizaciones.set(paseoId, ahora);
         emitirCoordenada(paseoId, data);
       } catch (error) {
-        console.error('Error al procesar nueva coordenada:', error);
+  
       }
     });
 

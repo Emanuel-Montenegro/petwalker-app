@@ -7,8 +7,6 @@ import rutasCalificaciones from './calificacionesRutas';
 import rutasGPS from './gpsRutas';
 import certificadosRutas from './certificadosRutas';
 import facturasRutas from './facturasRutas';
-import healthRutas from './healthRutas';
-import metricsRutas from './metricsRutas';
 
 const router = Router();
 
@@ -20,8 +18,6 @@ router.use('/calificaciones', rutasCalificaciones);
 router.use('/gps', rutasGPS);
 router.use('/certificados', certificadosRutas);
 router.use('/facturas', facturasRutas);
-router.use('/health', healthRutas);
-router.use('/metrics', metricsRutas);
 router.get('/', (_req, res) => {
   res.send('API Pet-Walker funcionando correctamente');
 });

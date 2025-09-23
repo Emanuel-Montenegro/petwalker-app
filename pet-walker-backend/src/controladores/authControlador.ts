@@ -16,22 +16,32 @@ const generateToken = (userId: number, rol: string): string => {
 // Login
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, contraseña } = req.body;
+    console.log('🔍 LOGIN: Iniciando proceso de login');
+    const { email, contrasena } = req.body;
+    console.log('🔍 LOGIN: Email:', email);
 
+    console.log('🔍 LOGIN: Buscando usuario en BD...');
     const usuario = await prisma.usuario.findUnique({
       where: { email }
     });
 
     if (!usuario) {
+      console.log('❌ LOGIN: Usuario no encontrado');
       return next(new AppError('Credenciales inválidas', 401));
     }
 
-    const contraseñaValida = await bcrypt.compare(contraseña, usuario.contraseña);
+    console.log('✅ LOGIN: Usuario encontrado, verificando contraseña...');
+    const contraseñaValida = await bcrypt.compare(contrasena, usuario.contrasena);
+    console.log('🔍 LOGIN: Contraseña válida:', contraseñaValida);
+    
     if (!contraseñaValida) {
+      console.log('❌ LOGIN: Contraseña inválida');
       return next(new AppError('Credenciales inválidas', 401));
     }
 
+    console.log('🔍 LOGIN: Generando token...');
     const token = generateToken(usuario.id, usuario.rol);
+    console.log('✅ LOGIN: Token generado');
 
     // Setear cookie HTTPOnly y Secure
     res.cookie('token', token, {
@@ -61,7 +71,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 // Registro
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { nombre, email, contraseña, rol } = req.body;
+    const { nombre, email, contrasena, rol } = req.body;
 
     const usuarioExistente = await prisma.usuario.findUnique({
       where: { email }
@@ -71,13 +81,13 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       return next(new AppError('El email ya está registrado', 400));
     }
 
-    const contraseñaEncriptada = await bcrypt.hash(contraseña, 10);
+    const contraseñaEncriptada = await bcrypt.hash(contrasena, 10);
 
     const usuario = await prisma.usuario.create({
       data: {
         nombre,
         email,
-        contraseña: contraseñaEncriptada,
+        contrasena: contraseñaEncriptada,
         rol
       }
     });

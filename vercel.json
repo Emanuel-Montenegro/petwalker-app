@@ -1,0 +1,23 @@
+{
+  "buildCommand": "cd pet-walker-frontend && npm install && npm run build",
+  "installCommand": "cd pet-walker-frontend && npm install",
+  "framework": "nextjs",
+  "rootDirectory": "pet-walker-frontend",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.ts"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "postgresql://postgres:JFKSU539873952KSUVNF!JSK2@KS@db.owfrtkhgxwnytirnjsnp.supabase.co:5432/postgres",
+    "JWT_SECRET": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "NODE_ENV": "production",
+    "ADMIN_EMAIL": "admin@petwalker.com",
+    "ADMIN_PASSWORD": "admin123",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://owfrtkhgxwnytirnjsnp.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZnJ0a2hneHdueXRpcm5qc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1ODk5MDQsImV4cCI6MjA3NDE2NTkwNH0.dmaDTikaPDV7HU0vj7TMZd0CUiDxDJPQRnOTzfkxvyg",
+    "NEXT_PUBLIC_BACKEND_URL": "https://petwalker-app.vercel.app/api",
+    "NEXT_PUBLIC_SOCKET_URL": "https://petwalker-app.vercel.app"
+  }
+}

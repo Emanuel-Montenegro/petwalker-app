@@ -1,0 +1,17 @@
+{
+  "name": "pet-walker-api",
+  "version": "1.0.0",
+  "description": "API serverless para la aplicación Pet Walker",
+  "main": "index.ts",
+  "scripts": {
+    "build": "echo 'No build needed for serverless'",
+    "start": "echo 'Serverless function'"
+  },
+  "dependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -113,6 +113,7 @@ export const scheduleWalk = async (walkData: {
     const response = await fetch(`${API_BASE_URL}/paseos`, {
       method: 'POST',
       headers: {
+        ...getAuthHeaders(),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(walkData),

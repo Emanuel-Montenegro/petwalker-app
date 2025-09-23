@@ -10,6 +10,7 @@ interface AuthState {
   usuario: UserInfo | null;
   token: string | null;
   setAuth: (auth: AuthResponse | null) => void;
+  setUsuario: (usuario: UserInfo) => void;
   logout: () => Promise<void>;
   isInitialized: boolean;
   initializeAuth: () => void;
@@ -38,7 +39,7 @@ const getStoredAuth = (): { usuario: UserInfo | null; token: string | null; isAu
   return { usuario: null, token: null, isAuthenticated: false };
 };
 
-const getInitialState = (): Omit<AuthState, 'setAuth' | 'logout' | 'initializeAuth'> => {
+const getInitialState = (): Omit<AuthState, 'setAuth' | 'setUsuario' | 'logout' | 'initializeAuth'> => {
   return {
     isAuthenticated: false,
     usuario: null,
@@ -52,12 +53,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setAuth: (auth) => {
     if (auth && auth.usuario) {
+      console.log('🔐 setAuth llamado con:', { usuario: auth.usuario.email, rol: auth.usuario.rol, tieneToken: !!auth.token });
       // Guardar en localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('usuario', JSON.stringify(auth.usuario));
         // Solo guardar el token si se proporciona uno nuevo
         if (auth.token) {
           localStorage.setItem('token', auth.token);
+          console.log('💾 Token guardado en localStorage:', auth.token.substring(0, 20) + '...');
         }
       }
       set({ 
@@ -91,15 +94,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isAuthenticated: false, usuario: null, token: null, isInitialized: true });
   },
 
+  setUsuario: (usuario) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+    }
+    set({ usuario });
+  },
+
   initializeAuth: () => {
+    console.log('🔧 initializeAuth: Ejecutándose, isInitialized:', get().isInitialized);
     if (!get().isInitialized) {
       const storedAuth = getStoredAuth();
+      console.log('📱 initializeAuth: Datos desde localStorage:', { 
+        tieneUsuario: !!storedAuth.usuario, 
+        tieneToken: !!storedAuth.token, 
+        isAuthenticated: storedAuth.isAuthenticated 
+      });
       set({ 
         isAuthenticated: storedAuth.isAuthenticated, 
         usuario: storedAuth.usuario, 
         token: storedAuth.token, 
         isInitialized: true 
       });
+      console.log('✅ initializeAuth: Estado actualizado');
+    } else {
+      console.log('⚠️ initializeAuth: Ya estaba inicializado');
     }
   },
 }));

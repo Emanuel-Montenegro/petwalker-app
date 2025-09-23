@@ -33,40 +33,43 @@ class Logger {
   }
 
   debug(module: string, message: string, data?: any): void {
-    if (this.isDevelopment) {
-      console.log(this.formatMessage(LOG_LEVELS.DEBUG, module, message, data));
-    }
+    // Production: debug logging disabled
   }
 
   info(module: string, message: string, data?: any): void {
-    console.log(this.formatMessage(LOG_LEVELS.INFO, module, message, data));
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(this.formatMessage(LOG_LEVELS.INFO, module, message, data));
+    }
   }
 
   warn(module: string, message: string, data?: any): void {
-    console.warn(this.formatMessage(LOG_LEVELS.WARN, module, message, data));
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(this.formatMessage(LOG_LEVELS.WARN, module, message, data));
+    }
   }
 
-  error(module: string, message: string, error?: any): void {
+  error(module: string, message: string, error?: Error | any): void {
     const errorData = error instanceof Error ? {
+      name: error.name,
       message: error.message,
-      stack: error.stack,
-      name: error.name
+      stack: error.stack
     } : error;
     
-    console.error(this.formatMessage(LOG_LEVELS.ERROR, module, message, errorData));
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(this.formatMessage(LOG_LEVELS.ERROR, module, message, errorData));
+    }
   }
 
-  // Métodos de conveniencia para casos comunes
   authDebug(message: string, data?: any): void {
-    this.debug('AUTH', message, data);
+    // Production: debug logging disabled
   }
 
   paseoDebug(message: string, data?: any): void {
-    this.debug('PASEO', message, data);
+    // Production: debug logging disabled
   }
 
   socketDebug(message: string, data?: any): void {
-    this.debug('SOCKET', message, data);
+    // Production: debug logging disabled
   }
 
   apiInfo(method: string, endpoint: string, userId?: number): void {
@@ -103,4 +106,4 @@ export const measurePerformance = async <T>(
   }
 };
 
-export default logger; 
+export default logger;

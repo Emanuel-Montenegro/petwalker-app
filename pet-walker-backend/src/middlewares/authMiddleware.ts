@@ -30,7 +30,7 @@ export async function verificarToken(req: RequestConUsuario, res: Response, next
     }
 
     if (!token) {
-      res.status(401).json({ message: 'No se proporcionó token de autenticación' });
+      res.status(401).json({ mensaje: 'Usuario no autenticado' });
       return;
     }
 
@@ -68,7 +68,7 @@ export async function verificarToken(req: RequestConUsuario, res: Response, next
     req.usuario = usuario;
     next();
   } catch (error) {
-    console.error('Error en verificarToken:', error);
+
     res.status(401).json({ message: 'Token inválido o expirado' });
   }
 }

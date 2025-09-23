@@ -22,17 +22,19 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+    <html lang="es" suppressHydrationWarning className="scrollbar-hide">
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased scrollbar-hide`}>
         <ErrorBoundary>
           <QueryProvider>
-            <ThemeProvider>
+          <ThemeProvider>
               <ThemeInitializer />
               <AuthInitializer />
-              {children}
+              <div className="scrollbar-hide">
+                {children}
+              </div>
               <Toaster richColors closeButton position="top-right" />
             </ThemeProvider>
-          </QueryProvider>
+            </QueryProvider>
         </ErrorBoundary>
       </body>
     </html>

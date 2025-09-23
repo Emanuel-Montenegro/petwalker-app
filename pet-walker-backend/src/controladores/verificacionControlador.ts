@@ -32,7 +32,7 @@ export const subirVerificacion = async (req: RequestConUsuario, res: Response) =
 
     res.status(201).json({ mensaje: 'Verificación enviada. En revisión.' });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al procesar verificación' });
   }
 };
@@ -53,7 +53,7 @@ export const cambiarEstadoVerificacion = async (req: Request, res: Response) => 
 
     res.json({ mensaje: 'Estado actualizado', verificacion });
   } catch (error) {
-    console.error(error);
+
     res.status(500).json({ mensaje: 'Error al actualizar estado' });
   }
 };

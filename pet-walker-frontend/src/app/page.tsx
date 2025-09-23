@@ -55,8 +55,8 @@ export default function HomePage() {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           requestAnimationFrame(() => {
-            entry.target.classList.add('animate-fade-in');
-            entry.target.classList.remove('opacity-0', 'translate-y-12');
+          entry.target.classList.add('animate-fade-in');
+          entry.target.classList.remove('opacity-0', 'translate-y-12');
           });
           // Unobserve after animation to save resources
           observerRef.current?.unobserve(entry.target);
@@ -86,29 +86,29 @@ export default function HomePage() {
 
   // Memoize static content
   const renderFloatingMesh = useMemo(() => (
-    <div className="fixed inset-0 z-0">
+        <div className="fixed inset-0 z-0">
       <div className="absolute inset-0 opacity-20">
         {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full mix-blend-screen will-change-transform"
-            style={{
-              width: (i * 25 + 100) % 120 + 80,
-              height: (i * 25 + 100) % 120 + 80,
-              left: `${(i * 30 + 20) % 80}%`,
-              top: `${(i * 35 + 15) % 80}%`,
-              background: `radial-gradient(circle, ${
+              <div
+                key={i}
+                className="absolute rounded-full mix-blend-screen will-change-transform"
+                style={{
+                  width: (i * 25 + 100) % 120 + 80,
+                  height: (i * 25 + 100) % 120 + 80,
+                  left: `${(i * 30 + 20) % 80}%`,
+                  top: `${(i * 35 + 15) % 80}%`,
+                  background: `radial-gradient(circle, ${
                 ['rgba(59,130,246,0.08)', 'rgba(236,72,153,0.08)', 'rgba(139,69,244,0.08)'][i % 3]
-              } 0%, transparent 70%)`,
+                  } 0%, transparent 70%)`,
               animation: `float ${8 + i * 2}s ease-in-out infinite`,
-              animationDelay: `${i * 1}s`,
+                  animationDelay: `${i * 1}s`,
               transform: `translate3d(0, ${scrollY * (0.01 + i * 0.002)}px, 0)`, // Reduced movement multiplier
               filter: 'blur(40px)',
-            }}
-          />
-        ))}
-      </div>
-    </div>
+                }}
+              />
+            ))}
+          </div>
+        </div>
   ), [scrollY]);
 
   // Optimized cursor follower with reduced updates
@@ -141,34 +141,34 @@ export default function HomePage() {
 
       {/* Floating Mesh Background - Optimizado para móvil */}
       {/* This block is now memoized and rendered conditionally */}
-
+      
       {/* Revolutionary Hero Section - Apple Vision Pro Style */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-0">
         
         {/* 3D Glass Morphism Cards - Ultra Optimized */}
         <div className="absolute inset-0 perspective-1000">
           {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
+                         <div
+               key={i}
               className="absolute w-72 h-44 bg-gradient-to-br from-gray-100/30 to-white/50 dark:from-gray-800/30 dark:to-gray-700/50 backdrop-blur-xl border border-gray-200/20 dark:border-gray-700/20 rounded-3xl shadow-2xl will-change-transform"
-              style={{
-                transform: `rotateX(${15 + i * 8}deg) rotateY(${-10 + i * 6}deg) translateZ(${i * 40}px)`,
-                left: `${15 + i * 20}%`,
-                top: `${10 + i * 12}%`,
-                animation: `float ${6 + i}s ease-in-out infinite`,
-                animationDelay: `${i * 0.5}s`,
+               style={{
+                 transform: `rotateX(${15 + i * 8}deg) rotateY(${-10 + i * 6}deg) translateZ(${i * 40}px)`,
+                 left: `${15 + i * 20}%`,
+                 top: `${10 + i * 12}%`,
+                 animation: `float ${6 + i}s ease-in-out infinite`,
+                 animationDelay: `${i * 0.5}s`,
                 boxShadow: '0 25px 50px -15px rgba(0, 0, 0, 0.2)'
-              }}
-            >
-              <div className="p-6 h-full flex flex-col justify-between">
+               }}
+             >
+                                              <div className="p-6 h-full flex flex-col justify-between">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-100/80 to-pink-100/80 dark:from-blue-900/80 dark:to-pink-900/80 rounded-xl backdrop-blur-sm flex items-center justify-center shadow-lg border border-gray-200/30 dark:border-gray-700/30">
                   <span className="text-gray-600 dark:text-gray-300 text-lg">{['🐕', '🐱', '🐾', '🐕‍♂️', '📍', '📸'][i % 6]}</span>
-                </div>
-                <div className="space-y-2">
+                  </div>
+                   <div className="space-y-2">
                   <div className="h-3 bg-gray-300/40 dark:bg-gray-600/40 rounded-full w-3/4 shadow-sm"></div>
                   <div className="h-3 bg-gray-200/40 dark:bg-gray-700/40 rounded-full w-1/2 shadow-sm"></div>
-                </div>
-              </div>
+                   </div>
+                 </div>
             </div>
           ))}
         </div>
@@ -191,9 +191,8 @@ export default function HomePage() {
           {/* Split Screen Layout - Optimizado para móvil */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center min-h-screen pt-24 sm:pt-0">
             
-            {/* Left Side - Typography ajustada */}
+            
             <div className="space-y-6 sm:space-y-8 text-center sm:text-left relative">
-              {/* Glassmorphism background para el texto - solo en móvil */}
               <div className="absolute inset-0 bg-gradient-to-br from-gray-900/40 to-gray-800/40 backdrop-blur-xl rounded-3xl -m-8 z-0 sm:hidden"></div>
               
               <div className="space-y-3 sm:space-y-4 relative z-10 p-8 sm:p-0">
@@ -219,15 +218,15 @@ export default function HomePage() {
               <p className="text-lg sm:text-xl text-gray-800 dark:text-gray-300 leading-relaxed max-w-lg mx-auto sm:mx-0 font-light relative z-10 px-8 sm:px-0">
                 Conectamos familias y sus <span className="text-blue-600 dark:text-blue-300">peludos compañeros</span> con cuidadores apasionados y verificados. 
                 <span className="text-gray-900 dark:text-gray-100 font-medium"> Paseos seguros, fotos en vivo y colas felices garantizadas.</span>
-              </p>
+               </p>
 
               {/* CTA Buttons - Ajustados para móvil */}
               <div className="flex flex-col sm:flex-row gap-4 pt-6 sm:pt-8 relative z-10 px-8 sm:px-0">
                 <Link href="/login?from=register" className="group w-full sm:w-auto">
                   <Button className="w-full sm:w-auto relative overflow-hidden bg-gradient-to-r from-blue-500 to-pink-500 hover:from-pink-500 hover:to-blue-500 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-500 transform hover:scale-105 shadow-2xl">
                     <span className="relative z-10">Registrarse</span>
-                    <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                  </Button>
+                   <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                 </Button>
                 </Link>
                 
                 <Link href="/login">
@@ -236,7 +235,7 @@ export default function HomePage() {
                     className="w-full sm:w-auto text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-700/30 hover:border-gray-400 dark:hover:border-gray-600/30 px-8 py-4 rounded-2xl backdrop-blur-sm transition-all duration-300 bg-gray-100/80 hover:bg-gray-200/80 dark:bg-gray-800/30 dark:hover:bg-gray-800/50"
                   >
                     Iniciar sesión
-                  </Button>
+                 </Button>
                 </Link>
               </div>
             </div>
@@ -257,12 +256,12 @@ export default function HomePage() {
                 {/* Pet Cards Grid - Ajustado para móvil */}
                 <div className="space-y-4 sm:space-y-6">
                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                    {[
+                                         {[
                       { icon: '🐕', name: 'Luna', status: 'Paseando', color: 'from-blue-900 to-pink-900' },
                       { icon: '🐱', name: 'Milo', status: 'En casa', color: 'from-pink-900 to-purple-900' },
                       { icon: '🐕‍🦺', name: 'Rex', status: 'Jugando', color: 'from-purple-900 to-blue-900' },
                       { icon: '🐾', name: 'Bella', status: 'Activa', color: 'from-gray-900 to-blue-900' }
-                    ].map((pet, i) => (
+                     ].map((pet, i) => (
                       <div key={i} className="bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 group hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 shadow-md hover:shadow-lg">
                         <div className={`w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br ${pet.color} rounded-lg mb-2 sm:mb-3 flex items-center justify-center shadow-sm border border-gray-700/30`}>
                           <span className="text-xs sm:text-sm">{pet.icon}</span>
@@ -270,12 +269,12 @@ export default function HomePage() {
                         <div className="space-y-1.5">
                           <div className="h-1.5 sm:h-2 bg-gray-200 dark:bg-gray-700 rounded w-3/4 shadow-sm"></div>
                           <div className="h-1.5 sm:h-2 bg-gray-100 dark:bg-gray-800 rounded w-1/2 shadow-sm"></div>
-                        </div>
+                         </div>
                         <div className="text-gray-700 dark:text-gray-300 text-[10px] sm:text-xs mt-2 font-medium truncate">{pet.name} • {pet.status}</div>
-                      </div>
+                       </div>
                     ))}
                   </div>
-
+                  
                   {/* Live Walk Card - Ajustado para móvil */}
                   <div className="bg-white dark:bg-gradient-to-r dark:from-gray-900 dark:to-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 shadow-md space-y-3 sm:space-y-4">
                     <div className="flex items-center gap-3">
@@ -290,7 +289,7 @@ export default function HomePage() {
                         <div className="h-1.5 sm:h-2 bg-gray-100 dark:bg-gray-800 rounded w-16 shadow-sm"></div>
                       </div>
                     </div>
-
+                    
                     <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center justify-between text-gray-700 dark:text-gray-300 text-[10px] sm:text-xs font-medium">
                         <span>📍 Ruta actual</span>
@@ -306,7 +305,7 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-
+                  
                   {/* Notifications - Ajustadas para móvil */}
                   <div className="space-y-2">
                     {[
@@ -326,7 +325,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          </div>
+                     </div>
         </div>
       </section>
 
@@ -456,9 +455,9 @@ export default function HomePage() {
                     <div key={i} className="h-8 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-sm">
                       <span className="text-gray-600 dark:text-gray-400 text-xs">{['🐕', '⏱️', '📍', '🏃‍♂️', '💧', '🎾'][i]}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
+            ))}
+          </div>
+        </div>
 
               <div className="bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 backdrop-blur-xl border border-gray-200 dark:border-gray-700 rounded-3xl p-6 group hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-500 shadow-lg scroll-animate opacity-0 translate-y-12" style={{animationDelay: '0.5s'}}>
                 <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-blue-500 rounded-xl mb-4 flex items-center justify-center shadow-md border border-gray-700/30">
@@ -508,8 +507,8 @@ export default function HomePage() {
                     </Link>
                   </li>
                 </ul>
-              </div>
-
+               </div>
+              
               {/* Legal */}
               <div className="space-y-2 sm:space-y-4">
                 <h3 className="text-gray-100 font-medium text-sm sm:text-base">Legal</h3>
@@ -522,11 +521,11 @@ export default function HomePage() {
                   <li>
                     <Link href="/terms" className="text-gray-400 hover:text-gray-300 text-xs sm:text-sm transition-colors">
                       Términos
-                    </Link>
+                </Link>
                   </li>
                 </ul>
               </div>
-
+              
               {/* Síguenos */}
               <div className="space-y-2 sm:space-y-4">
                 <h3 className="text-gray-100 font-medium text-sm sm:text-base">Síguenos</h3>
@@ -564,8 +563,8 @@ export default function HomePage() {
                 Hecho con <span className="text-red-500">❤️</span> en Argentina
               </p>
             </div>
-          </div>
-        </footer>
+        </div>
+      </footer>
 
         {/* Aseguramos que los modales estén por encima de todo */}
         <style jsx global>{`

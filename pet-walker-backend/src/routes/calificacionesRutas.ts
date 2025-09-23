@@ -1,17 +1,13 @@
 import { Router } from 'express';
 import { verificarToken } from '../middlewares/authMiddleware';
-import {
-  registrarCalificacion,
-  obtenerCalificacionesDePaseador,
-  obtenerPromedioDePaseador
+import { 
+  registrarCalificacion, 
+  obtenerCalificacionesDePaseador, 
+  obtenerPromedioDePaseador 
 } from '../controladores/calificacionesControlador';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = Router();
-
-// Helper para manejar funciones async
-const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
 
 router.use(verificarToken);
 
